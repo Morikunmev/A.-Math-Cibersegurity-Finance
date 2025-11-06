@@ -1,0 +1,6 @@
+"0","z1 = complex(1,2)
+class(z1)
+"
+"2","""octave"" no se reconoce como un comando interno o externo,
+programa o archivo por lotes ejecutable.
+"
