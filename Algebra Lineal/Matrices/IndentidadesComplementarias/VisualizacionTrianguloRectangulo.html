@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ángulos Complementarios - Visualización Interactiva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif; 
+        }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .formula-box {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 5px solid #2563eb;
+        }
+        .angle-label {
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));
+        }
+        canvas {
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Título Principal -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-black text-white mb-2 drop-shadow-lg">
+                🔺 ÁNGULOS COMPLEMENTARIOS 🔺
+            </h1>
+            <p class="text-xl text-purple-100 font-semibold">
+                Visualización Interactiva: α + β = 90°
+            </p>
+        </div>
+
+        <!-- Layout Principal -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Panel Izquierdo: Visualizaciones -->
+            <div class="space-y-6">
+                
+                <!-- Triángulo Rectángulo -->
+                <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-purple-300">
+                    <h2 class="text-2xl font-black text-center mb-4 text-purple-900">
+                        🔺 TRIÁNGULO RECTÁNGULO
+                    </h2>
+                    <div class="flex justify-center">
+                        <canvas id="triangleCanvas" width="500" height="400" class="bg-slate-50 rounded-xl border-2 border-slate-300"></canvas>
+                    </div>
+                    
+                    <!-- Explicación debajo del triángulo -->
+                    <div class="mt-4 bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                        <div class="space-y-2 text-sm">
+                            <div>
+                                <p class="font-black text-pink-600">Para α:</p>
+                                <p class="text-gray-700">• sin(α) = b/c (opuesto/hip)</p>
+                                <p class="text-gray-700">• cos(α) = a/c (adyacente/hip)</p>
+                            </div>
+                            <div class="pt-2 border-t border-blue-300">
+                                <p class="font-black text-blue-600">Para β = 90° - α:</p>
+                                <p class="text-gray-700">• sin(β) = a/c = cos(α)</p>
+                                <p class="text-gray-700">• cos(β) = b/c = sin(α)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Círculo Unitario -->
+                <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-blue-300">
+                    <h2 class="text-2xl font-black text-center mb-4 text-blue-900">
+                        🔵 CÍRCULO UNITARIO
+                    </h2>
+                    <div class="flex justify-center">
+                        <canvas id="circleCanvas" width="400" height="400" class="bg-slate-50 rounded-xl border-2 border-slate-300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Controles y Datos -->
+            <div class="space-y-6">
+                
+                <!-- Controles de Ángulo -->
+                <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-purple-300">
+                    <h2 class="text-2xl font-black text-center mb-4 text-purple-900">
+                        🎛️ CONTROLES
+                    </h2>
+                    
+                    <div class="bg-purple-50 rounded-xl p-4 border-2 border-purple-200 mb-4">
+                        <label class="block text-sm font-black text-purple-900 mb-2">
+                            📐 SELECCIONA UN ÁNGULO α:
+                        </label>
+                        <input type="range" id="angleSlider" min="0" max="90" value="30" 
+                               class="w-full h-3 bg-purple-200 rounded-lg cursor-pointer">
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-xs font-bold text-purple-800">0°</span>
+                            <div class="text-center">
+                                <div id="currentAngle" class="text-4xl font-black text-purple-600">30°</div>
+                                <div id="complementAngle" class="text-2xl font-bold text-blue-600">β = 60°</div>
+                            </div>
+                            <span class="text-xs font-bold text-purple-800">90°</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones Rápidos -->
+                    <div class="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                        <p class="text-sm font-black text-blue-900 mb-3">⚡ ÁNGULOS RÁPIDOS:</p>
+                        <div class="grid grid-cols-5 gap-2" id="quickButtons"></div>
+                    </div>
+
+                    <!-- Controles de Visualización -->
+                    <div class="bg-green-50 rounded-xl p-4 border-2 border-green-200 mt-4">
+                        <p class="text-sm font-black text-green-900 mb-3">👁️ MOSTRAR:</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button id="showAlpha" onclick="toggleAngle('alpha')" 
+                                    class="py-2 px-3 rounded-lg bg-pink-600 text-white font-bold text-sm hover:bg-pink-700 transition-all active:scale-95 shadow-md">
+                                ✓ Ángulo α
+                            </button>
+                            <button id="showBeta" onclick="toggleAngle('beta')" 
+                                    class="py-2 px-3 rounded-lg bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all active:scale-95 shadow-md">
+                                ✓ Ángulo β
+                            </button>
+                            <button id="showBoth" onclick="toggleAngle('both')" 
+                                    class="py-2 px-3 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-all active:scale-95 shadow-md">
+                                ✓ Ambos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fórmulas Fundamentales -->
+                <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-yellow-300">
+                    <h2 class="text-2xl font-black text-center mb-4 text-yellow-900">
+                        📚 FÓRMULAS FUNDAMENTALES
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="formula-box p-4 rounded-lg">
+                            <p class="text-xl font-black text-blue-700">1. sin(90° - α) = cos(α)</p>
+                            <p class="text-sm text-slate-600 mt-1">El seno del complemento es igual al coseno</p>
+                        </div>
+                        <div class="formula-box p-4 rounded-lg">
+                            <p class="text-xl font-black text-blue-700">2. cos(90° - α) = sin(α)</p>
+                            <p class="text-sm text-slate-600 mt-1">El coseno del complemento es igual al seno</p>
+                        </div>
+                        <div class="formula-box p-4 rounded-lg">
+                            <p class="text-xl font-black text-blue-700">3. tan(90° - α) = cot(α)</p>
+                            <p class="text-sm text-slate-600 mt-1">La tangente del complemento es la cotangente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Demostración -->
+                <div id="demoPanel" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-2xl p-6 border-4 border-indigo-300">
+                    <!-- Contenido dinámico -->
+                </div>
+
+                <!-- Tabla de Valores -->
+                <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-green-300">
+                    <h2 class="text-xl font-black text-center mb-4 text-green-900">
+                        📊 TABLA DE VALORES COMPLEMENTARIOS
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="bg-green-100">
+                                <tr class="font-black text-green-900">
+                                    <th class="p-2 border">α</th>
+                                    <th class="p-2 border">90°-α</th>
+                                    <th class="p-2 border">sin(α)</th>
+                                    <th class="p-2 border">cos(α)</th>
+                                    <th class="p-2 border">sin(90°-α)</th>
+                                    <th class="p-2 border">cos(90°-α)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="valuesTable" class="text-center font-semibold">
+                                <!-- Contenido dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de ángulos comunes
+        const commonAngles = [0, 15, 30, 45, 60, 75, 90];
+
+        // Estado de visualización
+        let showState = {
+            alpha: true,
+            beta: true
+        };
+
+        // Obtener elementos
+        const triangleCanvas = document.getElementById('triangleCanvas');
+        const circleCanvas = document.getElementById('circleCanvas');
+        const angleSlider = document.getElementById('angleSlider');
+        const currentAngle = document.getElementById('currentAngle');
+        const complementAngle = document.getElementById('complementAngle');
+
+        const triCtx = triangleCanvas.getContext('2d');
+        const cirCtx = circleCanvas.getContext('2d');
+
+        // Funciones auxiliares
+        const toRad = (deg) => (deg * Math.PI) / 180;
+        const fmt = (num) => Math.abs(num) < 0.0001 ? '0' : num.toFixed(4);
+
+        // Función para alternar visualización de ángulos
+        function toggleAngle(mode) {
+            const btnAlpha = document.getElementById('showAlpha');
+            const btnBeta = document.getElementById('showBeta');
+            const btnBoth = document.getElementById('showBoth');
+            
+            // Resetear todos los botones
+            btnAlpha.className = 'py-2 px-3 rounded-lg bg-gray-300 text-gray-700 font-bold text-sm hover:bg-gray-400 transition-all active:scale-95 shadow-md';
+            btnBeta.className = 'py-2 px-3 rounded-lg bg-gray-300 text-gray-700 font-bold text-sm hover:bg-gray-400 transition-all active:scale-95 shadow-md';
+            btnBoth.className = 'py-2 px-3 rounded-lg bg-gray-300 text-gray-700 font-bold text-sm hover:bg-gray-400 transition-all active:scale-95 shadow-md';
+            
+            // Activar el botón seleccionado y actualizar estado
+            if (mode === 'alpha') {
+                showState.alpha = true;
+                showState.beta = false;
+                btnAlpha.className = 'py-2 px-3 rounded-lg bg-pink-600 text-white font-bold text-sm hover:bg-pink-700 transition-all active:scale-95 shadow-md';
+                btnAlpha.innerHTML = '✓ Ángulo α';
+                btnBeta.innerHTML = 'Ángulo β';
+                btnBoth.innerHTML = 'Ambos';
+            } else if (mode === 'beta') {
+                showState.alpha = false;
+                showState.beta = true;
+                btnBeta.className = 'py-2 px-3 rounded-lg bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all active:scale-95 shadow-md';
+                btnAlpha.innerHTML = 'Ángulo α';
+                btnBeta.innerHTML = '✓ Ángulo β';
+                btnBoth.innerHTML = 'Ambos';
+            } else {
+                showState.alpha = true;
+                showState.beta = true;
+                btnBoth.className = 'py-2 px-3 rounded-lg bg-green-600 text-white font-bold text-sm hover:bg-green-700 transition-all active:scale-95 shadow-md';
+                btnAlpha.innerHTML = 'Ángulo α';
+                btnBeta.innerHTML = 'Ángulo β';
+                btnBoth.innerHTML = '✓ Ambos';
+            }
+            
+            // Actualizar visualización
+            const angle = angleSlider.value;
+            updateVisualization(angle);
+        }
+
+        // Dibujar triángulo rectángulo
+        function drawTriangle(angle) {
+            const ctx = triCtx;
+            ctx.clearRect(0, 0, triangleCanvas.width, triangleCanvas.height);
+
+            const centerX = 120;
+            const centerY = 320;
+            const scale = 220;
+
+            const angleRad = toRad(angle);
+            const betaRad = toRad(90 - angle);
+
+            const B = { x: centerX + scale, y: centerY };
+            const C = { x: centerX + scale, y: centerY - scale * Math.tan(angleRad) };
+            const A = { x: centerX, y: centerY };
+
+            // Dibujar el triángulo con relleno
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#333';
+            ctx.fillStyle = 'rgba(139, 92, 246, 0.1)'; // Relleno morado suave
+            
+            ctx.beginPath();
+            ctx.moveTo(A.x, A.y);
+            ctx.lineTo(B.x, B.y);
+            ctx.lineTo(C.x, C.y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Dibujar el cuadrado del ángulo recto (90°)
+            const squareSize = 20;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
+            
+            // Dibujar el cuadrado relleno
+            ctx.fillRect(B.x - squareSize, C.y, squareSize, squareSize);
+            ctx.strokeRect(B.x - squareSize, C.y, squareSize, squareSize);
+
+            // Etiqueta "90°" dentro del cuadrado
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('90°', B.x - squareSize/2, C.y + squareSize/2 + 5);
+            ctx.textAlign = 'left'; // Resetear alineación
+
+            // Ángulo α
+            if (showState.alpha) {
+                ctx.beginPath();
+                ctx.arc(A.x, A.y, 40, 0, -angleRad, true);
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.fillStyle = '#ec4899';
+                ctx.font = 'bold 24px Inter';
+                ctx.fillText('α', A.x + 50, A.y - 10);
+                ctx.font = 'bold 18px Inter';
+                ctx.fillText(angle + '°', A.x + 50, A.y + 15);
+            }
+
+            // Ángulo β
+            if (showState.beta) {
+                ctx.beginPath();
+                ctx.arc(C.x, C.y, 40, Math.PI / 2, Math.PI / 2 + betaRad, false);
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = 'bold 24px Inter';
+                ctx.fillText('β', C.x - 50, C.y + 25);
+                ctx.font = 'bold 18px Inter';
+                ctx.fillText((90 - angle) + '°', C.x - 50, C.y + 50);
+            }
+
+            // Etiquetas de lados
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 18px Inter';
+            ctx.fillText('a (adj a α)', (A.x + B.x) / 2 - 35, A.y + 35);
+            
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText('b (op a α)', B.x + 15, (B.y + C.y) / 2);
+
+            ctx.fillStyle = '#8b5cf6';
+            ctx.fillText('c (hip)', (A.x + C.x) / 2 - 60, (A.y + C.y) / 2 - 10);
+        }
+
+        // Dibujar círculo unitario
+        function drawCircle(angle) {
+            const ctx = cirCtx;
+            ctx.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
+
+            const centerX = 200;
+            const centerY = 200;
+            const radius = 160;
+
+            // Ejes
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(20, centerY);
+            ctx.lineTo(380, centerY);
+            ctx.moveTo(centerX, 20);
+            ctx.lineTo(centerX, 380);
+            ctx.stroke();
+
+            // Círculo
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            const angleRad = toRad(angle);
+            const beta = 90 - angle;
+            const betaRad = toRad(beta);
+
+            const x1 = centerX + radius * Math.cos(angleRad);
+            const y1 = centerY - radius * Math.sin(angleRad);
+
+            const x2 = centerX + radius * Math.cos(betaRad);
+            const y2 = centerY - radius * Math.sin(betaRad);
+
+            // Mostrar ángulo α
+            if (showState.alpha) {
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(x1, y1, 8, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#dc2626';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x1, centerY);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#16a34a';
+                ctx.beginPath();
+                ctx.moveTo(x1, centerY);
+                ctx.lineTo(centerX, centerY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ec4899';
+                ctx.font = 'bold 14px Inter';
+                ctx.fillText(`α=${angle}°`, x1 + 12, y1 - 10);
+
+                ctx.fillStyle = '#dc2626';
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText('sin(α)', x1 + 8, (y1 + centerY) / 2);
+
+                ctx.fillStyle = '#16a34a';
+                ctx.fillText('cos(α)', (x1 + centerX) / 2, centerY - 8);
+
+                // Arco
+                ctx.strokeStyle = '#ec4899';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 50, 0, angleRad, true);
+                ctx.stroke();
+            }
+
+            // Mostrar ángulo β
+            if (showState.beta && beta >= 0) {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(x2, y2, 8, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#ea580c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x2, y2);
+                ctx.lineTo(x2, centerY);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#0891b2';
+                ctx.beginPath();
+                ctx.moveTo(x2, centerY);
+                ctx.lineTo(centerX, centerY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#3b82f6';
+                ctx.font = 'bold 14px Inter';
+                ctx.fillText(`β=${beta}°`, x2 - 60, y2 - 10);
+
+                ctx.fillStyle = '#ea580c';
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText('sin(β)', x2 - 50, (y2 + centerY) / 2);
+
+                ctx.fillStyle = '#0891b2';
+                ctx.fillText('cos(β)', (x2 + centerX) / 2, centerY + 18);
+
+                // Arco
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 70, 0, betaRad, true);
+                ctx.stroke();
+            }
+
+            // Etiquetas de ejes
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('0°', centerX + radius + 8, centerY + 5);
+            ctx.fillText('90°', centerX - 5, 15);
+        }
+
+        // Actualizar panel de demostración
+        function updateDemoPanel(alpha, beta) {
+            const radAlpha = toRad(alpha);
+            const radBeta = toRad(beta);
+            
+            const sinAlpha = Math.sin(radAlpha);
+            const cosAlpha = Math.cos(radAlpha);
+            const sinBeta = Math.sin(radBeta);
+            const cosBeta = Math.cos(radBeta);
+            const tanAlpha = Math.tan(radAlpha);
+            const cotBeta = beta === 0 ? '∞' : (1 / Math.tan(radBeta)).toFixed(4);
+            
+            const demoPanel = document.getElementById('demoPanel');
+            
+            demoPanel.innerHTML = `
+                <h2 class="text-3xl font-black text-indigo-900 mb-4 text-center">
+                    🔬 DEMOSTRACIÓN EN TIEMPO REAL
+                </h2>
+                
+                <div class="bg-white rounded-xl p-4 mb-4 border-2 border-indigo-200 shadow-lg">
+                    <p class="font-black text-indigo-600 text-xs mb-2">ÁNGULOS COMPLEMENTARIOS</p>
+                    <div class="text-center">
+                        <span class="text-3xl font-black text-pink-600">α = ${alpha}°</span>
+                        <span class="text-2xl mx-4">+</span>
+                        <span class="text-3xl font-black text-blue-600">β = ${beta}°</span>
+                        <span class="text-2xl mx-4">=</span>
+                        <span class="text-3xl font-black text-green-600">90°</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mb-4 border-2 border-red-200 shadow-lg">
+                    <p class="font-black text-red-700 text-sm mb-3">
+                        📐 IDENTIDAD 1: sin(90° - α) = cos(α)
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded-lg border-2 border-red-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">cos(α) = cos(${alpha}°)</p>
+                            <p class="text-2xl font-black text-red-600">${fmt(cosAlpha)}</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border-2 border-orange-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">sin(90° - α) = sin(${beta}°)</p>
+                            <p class="text-2xl font-black text-orange-600">${fmt(sinBeta)}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="inline-block px-4 py-2 bg-green-500 text-white font-black rounded-lg shadow-md">
+                            ${Math.abs(cosAlpha - sinBeta) < 0.0001 ? '✓ ¡IGUALES!' : '≈ Casi iguales'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 mb-4 border-2 border-green-200 shadow-lg">
+                    <p class="font-black text-green-700 text-sm mb-3">
+                        📐 IDENTIDAD 2: cos(90° - α) = sin(α)
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded-lg border-2 border-green-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">sin(α) = sin(${alpha}°)</p>
+                            <p class="text-2xl font-black text-green-600">${fmt(sinAlpha)}</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border-2 border-teal-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">cos(90° - α) = cos(${beta}°)</p>
+                            <p class="text-2xl font-black text-teal-600">${fmt(cosBeta)}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="inline-block px-4 py-2 bg-green-500 text-white font-black rounded-lg shadow-md">
+                            ${Math.abs(sinAlpha - cosBeta) < 0.0001 ? '✓ ¡IGUALES!' : '≈ Casi iguales'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-lg">
+                    <p class="font-black text-blue-700 text-sm mb-3">
+                        📐 IDENTIDAD 3: tan(90° - α) = cot(α)
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-3 rounded-lg border-2 border-blue-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">tan(α) = tan(${alpha}°)</p>
+                            <p class="text-2xl font-black text-blue-600">${alpha === 90 ? '∞' : fmt(tanAlpha)}</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border-2 border-indigo-300">
+                            <p class="text-xs font-bold text-gray-600 mb-1">cot(${beta}°)</p>
+                            <p class="text-2xl font-black text-indigo-600">${cotBeta}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <span class="inline-block px-4 py-2 bg-green-500 text-white font-black rounded-lg shadow-md">
+                            ${Math.abs(tanAlpha - parseFloat(cotBeta)) < 0.0001 || (alpha === 90 && beta === 0) ? '✓ ¡IGUALES!' : '≈ Casi iguales'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-900 text-white rounded-xl p-4 mt-4">
+                    <p class="text-xs font-black text-yellow-400 mb-2">💡 ¿POR QUÉ FUNCIONA?</p>
+                    <p class="text-sm leading-relaxed">
+                        En un triángulo rectángulo, el <strong class="text-red-400">cateto opuesto</strong> a α 
+                        es el mismo que el <strong class="text-green-400">cateto adyacente</strong> a β. 
+                        Por eso sus funciones trigonométricas se "intercambian".
+                    </p>
+                </div>
+            `;
+        }
+
+        // Actualizar tabla de valores
+        function updateValuesTable() {
+            const angles = [0, 30, 45, 60, 90];
+            const tbody = document.getElementById('valuesTable');
+            
+            tbody.innerHTML = angles.map(alpha => {
+                const beta = 90 - alpha;
+                const radAlpha = toRad(alpha);
+                const radBeta = toRad(beta);
+                
+                const sinAlpha = fmt(Math.sin(radAlpha));
+                const cosAlpha = fmt(Math.cos(radAlpha));
+                const sinBeta = fmt(Math.sin(radBeta));
+                const cosBeta = fmt(Math.cos(radBeta));
+                
+                return `
+                    <tr class="hover:bg-green-50 transition-colors">
+                        <td class="p-2 border font-bold text-pink-600">${alpha}°</td>
+                        <td class="p-2 border font-bold text-blue-600">${beta}°</td>
+                        <td class="p-2 border ${Math.abs(parseFloat(sinAlpha) - parseFloat(cosBeta)) < 0.0001 ? 'bg-yellow-100 font-black' : ''}">${sinAlpha}</td>
+                        <td class="p-2 border ${Math.abs(parseFloat(cosAlpha) - parseFloat(sinBeta)) < 0.0001 ? 'bg-yellow-100 font-black' : ''}">${cosAlpha}</td>
+                        <td class="p-2 border ${Math.abs(parseFloat(sinAlpha) - parseFloat(cosBeta)) < 0.0001 ? 'bg-yellow-100 font-black' : ''}">${sinBeta}</td>
+                        <td class="p-2 border ${Math.abs(parseFloat(cosAlpha) - parseFloat(sinBeta)) < 0.0001 ? 'bg-yellow-100 font-black' : ''}">${cosBeta}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Inicializar botones rápidos
+        function initQuickButtons() {
+            const container = document.getElementById('quickButtons');
+            
+            commonAngles.forEach(angle => {
+                const button = document.createElement('button');
+                button.textContent = `${angle}°`;
+                button.className = `py-3 px-2 rounded-lg bg-white border-2 border-purple-300 
+                                    text-sm font-black text-purple-900 hover:bg-purple-100 
+                                    hover:border-purple-500 transition-all active:scale-95 shadow-md`;
+                button.onclick = () => {
+                    angleSlider.value = angle;
+                    updateVisualization(angle);
+                };
+                container.appendChild(button);
+            });
+        }
+
+        // Función principal de actualización
+        function updateVisualization(angle) {
+            const alpha = parseFloat(angle);
+            const beta = 90 - alpha;
+            
+            currentAngle.textContent = `${alpha}°`;
+            complementAngle.textContent = `β = ${beta}°`;
+            
+            drawTriangle(alpha);
+            drawCircle(alpha);
+            updateDemoPanel(alpha, beta);
+            updateValuesTable();
+        }
+
+        // Event Listeners
+        angleSlider.addEventListener('input', (e) => {
+            updateVisualization(e.target.value);
+        });
+
+        // Inicializar
+        initQuickButtons();
+        updateVisualization(30);
+    </script>
+</body>
+</html>
