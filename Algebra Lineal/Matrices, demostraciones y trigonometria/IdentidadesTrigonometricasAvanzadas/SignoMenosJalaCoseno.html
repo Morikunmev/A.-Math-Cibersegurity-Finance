@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>¿Por qué el signo menos?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+  body { margin:0; background:#0f0f1a; color:#e0e0ff; font-family:'JetBrains Mono',monospace; display:flex; flex-direction:column; align-items:center; padding:30px; }
+  h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:#a78bfa; margin-bottom:5px; }
+  p.sub { color:#6b6b9a; font-size:.85rem; margin-bottom:20px; text-align:center; }
+  .container { display:flex; gap:25px; flex-wrap:wrap; justify-content:center; }
+  canvas { border:2px solid #2d2d4e; border-radius:12px; background:#0d0d1f; }
+  .panel { background:#13132a; border:1px solid #2d2d4e; border-radius:12px; padding:20px; width:260px; }
+  label { color:#8888bb; font-size:.75rem; display:block; margin-bottom:4px; }
+  input[type=range] { width:100%; accent-color:#7c3aed; margin-bottom:14px; }
+  .row { display:flex; justify-content:space-between; margin-bottom:8px; font-size:.8rem; }
+  .key { color:#8888bb; }
+  .val-x { color:#f59e0b; font-weight:700; font-size:1rem; }
+  .val-y { color:#a78bfa; font-weight:700; font-size:1rem; }
+  .val-g { color:#34d399; font-weight:700; font-size:1rem; }
+  .formula { background:#0f0f22; border-left:3px solid #7c3aed; padding:10px 14px; border-radius:6px; margin-top:12px; font-size:.78rem; line-height:2; }
+  .insight { background:#0f1f0f; border-left:3px solid #34d399; padding:10px 14px; border-radius:6px; margin-top:10px; font-size:.75rem; line-height:1.7; color:#86efac; }
+</style>
+</head>
+<body>
+<h1>¿Por qué el signo menos?</h1>
+<p class="sub">La componente Y "jala hacia arriba" y reduce la sombra en X</p>
+
+<div class="container">
+  <canvas id="cv" width="400" height="400"></canvas>
+
+  <div class="panel">
+    <label>Ángulo de rotación B: <span id="bLbl">45</span>°</label>
+    <input type="range" id="slB" min="0" max="89" value="45">
+    <label>Punto x: <span id="xLbl">3</span></label>
+    <input type="range" id="slX" min="1" max="5" value="3" step="0.5">
+    <label>Punto y: <span id="yLbl">2</span></label>
+    <input type="range" id="slY" min="1" max="5" value="2" step="0.5">
+
+    <div style="margin-top:14px">
+      <div class="row"><span class="key">x original:</span><span class="val-x" id="xOrig">3</span></div>
+      <div class="row"><span class="key">y original:</span><span class="val-y" id="yOrig">2</span></div>
+      <div class="row"><span class="key">x' después de rotar:</span><span class="val-g" id="xNew">?</span></div>
+    </div>
+
+    <div class="formula" id="formula">
+      x' = x·cos(B) - y·sin(B)
+    </div>
+
+    <div class="insight">
+      💡 El término <strong>-y·sin(B)</strong> siempre resta.<br>
+      Mientras más grande sea Y, más se reduce X'.
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const cx=200, cy=200;
+
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(3); }
+
+function draw(px, py, B){
+  ctx.clearRect(0,0,400,400);
+  const scale = 30;
+
+  // Grid
+  ctx.strokeStyle='#1a1a35'; ctx.lineWidth=1;
+  for(let i=-6;i<=6;i++){
+    ctx.beginPath(); ctx.moveTo(cx+i*scale,cy-180); ctx.lineTo(cx+i*scale,cy+180); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-180,cy+i*scale); ctx.lineTo(cx+180,cy+i*scale); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle='#3d3d6b'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(cx-185,cy); ctx.lineTo(cx+185,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-185); ctx.lineTo(cx,cy+185); ctx.stroke();
+  ctx.fillStyle='#4b4b7b'; ctx.font='11px JetBrains Mono';
+  ctx.fillText('x',cx+188,cy+4); ctx.fillText('y',cx+4,cy-188);
+
+  const rB = rad(B);
+  const nx = cx+px*scale, ny = cy-py*scale;
+  const rx = px*Math.cos(rB) - py*Math.sin(rB);
+  const ry = px*Math.sin(rB) + py*Math.cos(rB);
+  const rnx = cx+rx*scale, rny = cy-ry*scale;
+
+  // x projection original (orange dashed)
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(nx,ny); ctx.lineTo(nx,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(nx,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // x projection rotated (green dashed)
+  ctx.strokeStyle='#34d399'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(rnx,rny); ctx.lineTo(rnx,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(rnx,cy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Original point line
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(nx,ny); ctx.stroke();
+  ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(nx,ny,7,0,2*Math.PI); ctx.fill();
+  ctx.fillStyle='#fde68a'; ctx.font='bold 12px JetBrains Mono';
+  ctx.fillText(`P(${px},${py})`, nx+10, ny-8);
+
+  // Rotated point line
+  ctx.strokeStyle='#34d399'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(rnx,rny); ctx.stroke();
+  ctx.fillStyle='#34d399'; ctx.beginPath(); ctx.arc(rnx,rny,7,0,2*Math.PI); ctx.fill();
+  ctx.fillStyle='#6ee7b7'; ctx.font='bold 12px JetBrains Mono';
+  ctx.fillText(`P'(${fmt(rx)},...)`, rnx+10, rny-8);
+
+  // Rotation arc
+  const startAngle = -Math.atan2(py,px);
+  const endAngle = startAngle - rB;
+  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(cx,cy,40, startAngle, endAngle, true); ctx.stroke();
+  ctx.fillStyle='#c4b5fd'; ctx.font='11px JetBrains Mono';
+  const midA = startAngle - rB/2;
+  ctx.fillText(`B=${B}°`, cx+45*Math.cos(midA)-10, cy+45*Math.sin(midA)+4);
+
+  // Labels x projection
+  ctx.fillStyle='#f59e0b'; ctx.font='bold 11px JetBrains Mono';
+  ctx.fillText(`x=${px}`, cx + px*scale/2 - 8, cy+16);
+  ctx.fillStyle='#34d399';
+  ctx.fillText(`x'=${fmt(rx)}`, cx + rx*scale/2 - 15, cy-10);
+
+  // Y contribution arrow
+  const yContrib = py*Math.sin(rB);
+  ctx.strokeStyle='#ef4444'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx+rx*scale+5, cy-5); ctx.lineTo(cx+rx*scale+5, cy-5-yContrib*scale); ctx.stroke();
+  ctx.fillStyle='#fca5a5'; ctx.font='10px JetBrains Mono';
+  ctx.fillText(`-y·sin(B)=-${fmt(yContrib)}`, cx+rx*scale+8, cy-yContrib*scale/2);
+
+  // Update panel
+  document.getElementById('xOrig').textContent = px;
+  document.getElementById('yOrig').textContent = py;
+  document.getElementById('xNew').textContent = fmt(rx);
+  document.getElementById('formula').innerHTML =
+    `x' = x·cos(B) - y·sin(B)<br>
+     = ${px}·${fmt(Math.cos(rB))} - ${py}·${fmt(Math.sin(rB))}<br>
+     = ${fmt(px*Math.cos(rB))} - ${fmt(py*Math.sin(rB))}<br>
+     = <strong style="color:#34d399">${fmt(rx)}</strong>`;
+}
+
+function update(){
+  const B=+document.getElementById('slB').value;
+  const px=+document.getElementById('slX').value;
+  const py=+document.getElementById('slY').value;
+  document.getElementById('bLbl').textContent=B;
+  document.getElementById('xLbl').textContent=px;
+  document.getElementById('yLbl').textContent=py;
+  draw(px,py,B);
+}
+
+['slB','slX','slY'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+update();
+</script>
+</body>
+</html>

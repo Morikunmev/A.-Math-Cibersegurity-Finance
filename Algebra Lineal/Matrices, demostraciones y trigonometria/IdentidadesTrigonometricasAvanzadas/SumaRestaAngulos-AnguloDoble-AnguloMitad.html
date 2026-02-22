@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identidades Trigonométricas Avanzadas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            font-family: 'Inter', sans-serif; 
+        }
+        body { 
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        }
+        .formula-box {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 5px solid #f59e0b;
+        }
+        canvas {
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Título Principal -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-black text-white mb-2 drop-shadow-lg">
+                🔥 IDENTIDADES TRIGONOMÉTRICAS AVANZADAS 🔥
+            </h1>
+            <p class="text-xl text-orange-100 font-semibold">
+                Suma, Resta, Doble y Mitad de Ángulos
+            </p>
+        </div>
+
+        <!-- Pestañas de Navegación -->
+        <div class="flex flex-wrap justify-center gap-3 mb-6">
+            <button onclick="changeTab('suma')" id="tab-suma" 
+                    class="tab-button active px-6 py-3 rounded-xl bg-orange-500 text-white font-black text-lg hover:bg-orange-600 shadow-lg">
+                ➕ SUMA/RESTA
+            </button>
+            <button onclick="changeTab('doble')" id="tab-doble" 
+                    class="tab-button px-6 py-3 rounded-xl bg-white text-orange-900 font-black text-lg hover:bg-orange-100 shadow-lg">
+                ✖️ ÁNGULO DOBLE
+            </button>
+            <button onclick="changeTab('mitad')" id="tab-mitad" 
+                    class="tab-button px-6 py-3 rounded-xl bg-white text-orange-900 font-black text-lg hover:bg-orange-100 shadow-lg">
+                ➗ ÁNGULO MITAD
+            </button>
+        </div>
+
+        <!-- Contenido de las Pestañas -->
+        <div id="content-suma" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Panel Izquierdo -->
+                <div class="space-y-6">
+                    
+                    <!-- Visualización Circular -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-orange-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-orange-900">
+                            🔵 VISUALIZACIÓN: α + β
+                        </h2>
+                        <div class="flex justify-center">
+                            <canvas id="sumaCanvas" width="450" height="450" class="bg-slate-50 rounded-xl border-2 border-slate-300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Controles -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-red-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-red-900">
+                            🎛️ CONTROLES
+                        </h2>
+                        
+                        <div class="space-y-4">
+                            <!-- Ángulo α -->
+                            <div class="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
+                                <label class="block text-sm font-black text-orange-900 mb-2">
+                                    📐 ÁNGULO α:
+                                </label>
+                                <input type="range" id="alphaSlider" min="0" max="90" value="30" 
+                                       class="w-full h-3 bg-orange-200 rounded-lg cursor-pointer">
+                                <div class="text-center mt-2">
+                                    <span id="alphaValue" class="text-3xl font-black text-orange-600">30°</span>
+                                </div>
+                            </div>
+
+                            <!-- Ángulo β -->
+                            <div class="bg-red-50 rounded-xl p-4 border-2 border-red-200">
+                                <label class="block text-sm font-black text-red-900 mb-2">
+                                    📐 ÁNGULO β:
+                                </label>
+                                <input type="range" id="betaSlider" min="0" max="90" value="45" 
+                                       class="w-full h-3 bg-red-200 rounded-lg cursor-pointer">
+                                <div class="text-center mt-2">
+                                    <span id="betaValue" class="text-3xl font-black text-red-600">45°</span>
+                                </div>
+                            </div>
+
+                            <!-- Resultado -->
+                            <div class="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+                                <p class="text-center">
+                                    <span class="text-xl font-black text-green-900">RESULTADO:</span><br>
+                                    <span id="resultSum" class="text-4xl font-black text-green-600">α + β = 75°</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Operación -->
+                        <div class="mt-4 grid grid-cols-2 gap-3">
+                            <button onclick="setOperation('suma')" id="btn-suma" 
+                                    class="py-3 rounded-lg bg-green-600 text-white font-black hover:bg-green-700 transition-all shadow-md">
+                                ✓ α + β
+                            </button>
+                            <button onclick="setOperation('resta')" id="btn-resta" 
+                                    class="py-3 rounded-lg bg-gray-300 text-gray-700 font-bold hover:bg-gray-400 transition-all shadow-md">
+                                α - β
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Derecho -->
+                <div class="space-y-6">
+                    
+                    <!-- Fórmulas -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-yellow-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-yellow-900">
+                            📚 FÓRMULAS
+                        </h2>
+                        <div class="space-y-3">
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-orange-700">sin(α ± β) = sin(α)cos(β) ± cos(α)sin(β)</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-orange-700">cos(α ± β) = cos(α)cos(β) ∓ sin(α)sin(β)</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-orange-700">tan(α ± β) = [tan(α) ± tan(β)] / [1 ∓ tan(α)tan(β)]</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cálculos en Tiempo Real -->
+                    <div id="sumaCalcs" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-2xl p-6 border-4 border-indigo-300">
+                        <!-- Contenido dinámico -->
+                    </div>
+
+                    <!-- Tabla de Ejemplos -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-green-300">
+                        <h2 class="text-xl font-black text-center mb-4 text-green-900">
+                            📊 EJEMPLOS CLÁSICOS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-green-100">
+                                    <tr class="font-black text-green-900">
+                                        <th class="p-2 border">Operación</th>
+                                        <th class="p-2 border">Resultado</th>
+                                        <th class="p-2 border">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center font-semibold">
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">sin(45° + 30°)</td>
+                                        <td class="p-2 border">sin(75°)</td>
+                                        <td class="p-2 border">(√6 + √2)/4</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">sin(45° - 30°)</td>
+                                        <td class="p-2 border">sin(15°)</td>
+                                        <td class="p-2 border">(√6 - √2)/4</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">cos(60° + 30°)</td>
+                                        <td class="p-2 border">cos(90°)</td>
+                                        <td class="p-2 border">0</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">cos(45° - 45°)</td>
+                                        <td class="p-2 border">cos(0°)</td>
+                                        <td class="p-2 border">1</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO ÁNGULO DOBLE -->
+        <div id="content-doble" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Panel Izquierdo -->
+                <div class="space-y-6">
+                    
+                    <!-- Visualización -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-purple-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-purple-900">
+                            🔵 VISUALIZACIÓN: 2α
+                        </h2>
+                        <div class="flex justify-center">
+                            <canvas id="dobleCanvas" width="450" height="450" class="bg-slate-50 rounded-xl border-2 border-slate-300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Control -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-purple-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-purple-900">
+                            🎛️ CONTROL
+                        </h2>
+                        
+                        <div class="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
+                            <label class="block text-sm font-black text-purple-900 mb-2">
+                                📐 ÁNGULO α:
+                            </label>
+                            <input type="range" id="dobleSlider" min="0" max="90" value="30" 
+                                   class="w-full h-3 bg-purple-200 rounded-lg cursor-pointer">
+                            <div class="text-center mt-3">
+                                <div>
+                                    <span class="text-3xl font-black text-purple-600" id="dobleAlpha">30°</span>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-xl font-bold text-gray-600">Doble:</span>
+                                    <span class="text-3xl font-black text-blue-600" id="dobleResult">60°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones Rápidos -->
+                        <div class="mt-4 bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                            <p class="text-sm font-black text-blue-900 mb-3">⚡ ÁNGULOS RÁPIDOS:</p>
+                            <div class="grid grid-cols-5 gap-2" id="dobleQuickButtons"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Derecho -->
+                <div class="space-y-6">
+                    
+                    <!-- Fórmulas -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-yellow-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-yellow-900">
+                            📚 FÓRMULAS DE ÁNGULO DOBLE
+                        </h2>
+                        <div class="space-y-3">
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-purple-700">sin(2α) = 2sin(α)cos(α)</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-purple-700">cos(2α) = cos²(α) - sin²(α)</p>
+                                <p class="text-sm text-gray-600 mt-1">También: 2cos²(α) - 1 = 1 - 2sin²(α)</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-purple-700">tan(2α) = 2tan(α) / [1 - tan²(α)]</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cálculos -->
+                    <div id="dobleCalcs" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-2xl p-6 border-4 border-indigo-300">
+                        <!-- Contenido dinámico -->
+                    </div>
+
+                    <!-- Ejemplos -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-green-300">
+                        <h2 class="text-xl font-black text-center mb-4 text-green-900">
+                            📊 EJEMPLOS CLÁSICOS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-green-100">
+                                    <tr class="font-black text-green-900">
+                                        <th class="p-2 border">α</th>
+                                        <th class="p-2 border">2α</th>
+                                        <th class="p-2 border">sin(2α)</th>
+                                        <th class="p-2 border">cos(2α)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center font-semibold">
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">30°</td>
+                                        <td class="p-2 border">60°</td>
+                                        <td class="p-2 border">√3/2</td>
+                                        <td class="p-2 border">1/2</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">45°</td>
+                                        <td class="p-2 border">90°</td>
+                                        <td class="p-2 border">1</td>
+                                        <td class="p-2 border">0</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">60°</td>
+                                        <td class="p-2 border">120°</td>
+                                        <td class="p-2 border">√3/2</td>
+                                        <td class="p-2 border">-1/2</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO ÁNGULO MITAD -->
+        <div id="content-mitad" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Panel Izquierdo -->
+                <div class="space-y-6">
+                    
+                    <!-- Visualización -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-teal-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-teal-900">
+                            🔵 VISUALIZACIÓN: α/2
+                        </h2>
+                        <div class="flex justify-center">
+                            <canvas id="mitadCanvas" width="450" height="450" class="bg-slate-50 rounded-xl border-2 border-slate-300"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Control -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-teal-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-teal-900">
+                            🎛️ CONTROL
+                        </h2>
+                        
+                        <div class="bg-teal-50 rounded-xl p-4 border-2 border-teal-200">
+                            <label class="block text-sm font-black text-teal-900 mb-2">
+                                📐 ÁNGULO α:
+                            </label>
+                            <input type="range" id="mitadSlider" min="0" max="180" value="60" 
+                                   class="w-full h-3 bg-teal-200 rounded-lg cursor-pointer">
+                            <div class="text-center mt-3">
+                                <div>
+                                    <span class="text-3xl font-black text-teal-600" id="mitadAlpha">60°</span>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-xl font-bold text-gray-600">Mitad:</span>
+                                    <span class="text-3xl font-black text-blue-600" id="mitadResult">30°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones Rápidos -->
+                        <div class="mt-4 bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                            <p class="text-sm font-black text-blue-900 mb-3">⚡ ÁNGULOS RÁPIDOS:</p>
+                            <div class="grid grid-cols-5 gap-2" id="mitadQuickButtons"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Derecho -->
+                <div class="space-y-6">
+                    
+                    <!-- Fórmulas -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-yellow-300">
+                        <h2 class="text-2xl font-black text-center mb-4 text-yellow-900">
+                            📚 FÓRMULAS DE ÁNGULO MITAD
+                        </h2>
+                        <div class="space-y-3">
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-teal-700">sin(α/2) = ±√[(1 - cos(α))/2]</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-teal-700">cos(α/2) = ±√[(1 + cos(α))/2]</p>
+                            </div>
+                            <div class="formula-box p-4 rounded-lg">
+                                <p class="text-lg font-black text-teal-700">tan(α/2) = sin(α) / [1 + cos(α)]</p>
+                                <p class="text-sm text-gray-600 mt-1">También: [1 - cos(α)] / sin(α)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cálculos -->
+                    <div id="mitadCalcs" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl shadow-2xl p-6 border-4 border-indigo-300">
+                        <!-- Contenido dinámico -->
+                    </div>
+
+                    <!-- Ejemplos -->
+                    <div class="bg-white rounded-2xl shadow-2xl p-6 border-4 border-green-300">
+                        <h2 class="text-xl font-black text-center mb-4 text-green-900">
+                            📊 EJEMPLOS CLÁSICOS
+                        </h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-green-100">
+                                    <tr class="font-black text-green-900">
+                                        <th class="p-2 border">α</th>
+                                        <th class="p-2 border">α/2</th>
+                                        <th class="p-2 border">sin(α/2)</th>
+                                        <th class="p-2 border">cos(α/2)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-center font-semibold">
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">60°</td>
+                                        <td class="p-2 border">30°</td>
+                                        <td class="p-2 border">1/2</td>
+                                        <td class="p-2 border">√3/2</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">90°</td>
+                                        <td class="p-2 border">45°</td>
+                                        <td class="p-2 border">√2/2</td>
+                                        <td class="p-2 border">√2/2</td>
+                                    </tr>
+                                    <tr class="hover:bg-green-50">
+                                        <td class="p-2 border">120°</td>
+                                        <td class="p-2 border">60°</td>
+                                        <td class="p-2 border">√3/2</td>
+                                        <td class="p-2 border">1/2</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones auxiliares
+        const toRad = (deg) => (deg * Math.PI) / 180;
+        const toDeg = (rad) => (rad * 180) / Math.PI;
+        const fmt = (num) => Math.abs(num) < 0.0001 ? '0' : num.toFixed(4);
+
+        // Estado global
+        let currentOperation = 'suma';
+        let currentTab = 'suma';
+
+        // Cambiar pestaña
+        function changeTab(tab) {
+            currentTab = tab;
+            
+            // Ocultar todos los contenidos
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Mostrar el contenido seleccionado
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            
+            // Actualizar estilos de botones
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-orange-500', 'text-white');
+                btn.classList.add('bg-white', 'text-orange-900');
+            });
+            
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.add('active', 'bg-orange-500', 'text-white');
+            activeBtn.classList.remove('bg-white', 'text-orange-900');
+            
+            // Actualizar visualización
+            if (tab === 'suma') updateSuma();
+            else if (tab === 'doble') updateDoble();
+            else if (tab === 'mitad') updateMitad();
+        }
+
+        // Cambiar operación (suma/resta)
+        function setOperation(op) {
+            currentOperation = op;
+            
+            const btnSuma = document.getElementById('btn-suma');
+            const btnResta = document.getElementById('btn-resta');
+            
+            if (op === 'suma') {
+                btnSuma.className = 'py-3 rounded-lg bg-green-600 text-white font-black hover:bg-green-700 transition-all shadow-md';
+                btnResta.className = 'py-3 rounded-lg bg-gray-300 text-gray-700 font-bold hover:bg-gray-400 transition-all shadow-md';
+            } else {
+                btnSuma.className = 'py-3 rounded-lg bg-gray-300 text-gray-700 font-bold hover:bg-gray-400 transition-all shadow-md';
+                btnResta.className = 'py-3 rounded-lg bg-red-600 text-white font-black hover:bg-red-700 transition-all shadow-md';
+            }
+            
+            updateSuma();
+        }
+
+        // ==================== SUMA/RESTA ====================
+        function drawSumaCanvas(alpha, beta, operation) {
+            const canvas = document.getElementById('sumaCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = 225;
+            const centerY = 225;
+            const radius = 180;
+
+            // Ejes
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(20, centerY);
+            ctx.lineTo(430, centerY);
+            ctx.moveTo(centerX, 20);
+            ctx.lineTo(centerX, 430);
+            ctx.stroke();
+
+            // Círculo
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            const radAlpha = toRad(alpha);
+            const radBeta = toRad(beta);
+            const radResult = operation === 'suma' ? radAlpha + radBeta : radAlpha - radBeta;
+
+            const x1 = centerX + radius * Math.cos(radAlpha);
+            const y1 = centerY - radius * Math.sin(radAlpha);
+
+            const x2 = centerX + radius * Math.cos(radResult);
+            const y2 = centerY - radius * Math.sin(radResult);
+
+            // Dibujar α
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x1, y1);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(x1, y1, 8, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco α
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, radAlpha, true);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = 'bold 16px Inter';
+            ctx.fillText(`α=${alpha}°`, centerX + 70, centerY - 10);
+
+            // Dibujar resultado
+            ctx.strokeStyle = operation === 'suma' ? '#10b981' : '#ef4444';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.fillStyle = operation === 'suma' ? '#10b981' : '#ef4444';
+            ctx.beginPath();
+            ctx.arc(x2, y2, 10, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco β
+            if (operation === 'suma') {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 80, radAlpha, radResult, true);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ef4444';
+                ctx.font = 'bold 16px Inter';
+                const midAngle = (radAlpha + radResult) / 2;
+                const labelX = centerX + 90 * Math.cos(midAngle);
+                const labelY = centerY - 90 * Math.sin(midAngle);
+                ctx.fillText(`β=${beta}°`, labelX, labelY);
+            }
+
+            // Etiqueta resultado
+            ctx.fillStyle = operation === 'suma' ? '#10b981' : '#ef4444';
+            ctx.font = 'bold 18px Inter';
+            const resultDeg = Math.round(toDeg(radResult));
+            ctx.fillText(`${operation === 'suma' ? '+' : '-'} = ${resultDeg}°`, x2 + 15, y2 - 15);
+
+            // Etiquetas de ejes
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('0°', centerX + radius + 8, centerY + 5);
+            ctx.fillText('90°', centerX - 5, 15);
+        }
+
+        function updateSumaCalcs(alpha, beta, operation) {
+            const radAlpha = toRad(alpha);
+            const radBeta = toRad(beta);
+
+            const sinA = Math.sin(radAlpha);
+            const cosA = Math.cos(radAlpha);
+            const sinB = Math.sin(radBeta);
+            const cosB = Math.cos(radBeta);
+            const tanA = Math.tan(radAlpha);
+            const tanB = Math.tan(radBeta);
+
+            const sign = operation === 'suma' ? '+' : '-';
+            const signOp = operation === 'suma' ? 1 : -1;
+            const signTan = operation === 'suma' ? -1 : 1;
+
+            const sinResult = sinA * cosB + signOp * cosA * sinB;
+            const cosResult = cosA * cosB + (-signOp) * sinA * sinB;
+            const tanResult = (tanA + signOp * tanB) / (1 + signTan * tanA * tanB);
+
+            const resultAngle = operation === 'suma' ? alpha + beta : alpha - beta;
+
+            const panel = document.getElementById('sumaCalcs');
+            panel.innerHTML = `
+                <h2 class="text-3xl font-black text-indigo-900 mb-4 text-center">
+                    🔬 CÁLCULOS: α ${sign} β = ${resultAngle}°
+                </h2>
+                
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mb-4 border-2 border-red-200 shadow-lg">
+                    <p class="font-black text-red-700 text-sm mb-3">
+                        📐 SENO: sin(α ${sign} β)
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-red-300">
+                        <p class="text-xs font-bold text-gray-600 mb-1">sin(${alpha}°)cos(${beta}°) ${sign} cos(${alpha}°)sin(${beta}°)</p>
+                        <p class="text-sm text-gray-700">${fmt(sinA)} × ${fmt(cosB)} ${sign} ${fmt(cosA)} × ${fmt(sinB)}</p>
+                        <p class="text-2xl font-black text-red-600 mt-2">= ${fmt(sinResult)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 mb-4 border-2 border-green-200 shadow-lg">
+                    <p class="font-black text-green-700 text-sm mb-3">
+                        📐 COSENO: cos(α ${sign} β)
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-green-300">
+                        <p class="text-xs font-bold text-gray-600 mb-1">cos(${alpha}°)cos(${beta}°) ${operation === 'suma' ? '-' : '+'} sin(${alpha}°)sin(${beta}°)</p>
+                        <p class="text-sm text-gray-700">${fmt(cosA)} × ${fmt(cosB)} ${operation === 'suma' ? '-' : '+'} ${fmt(sinA)} × ${fmt(sinB)}</p>
+                        <p class="text-2xl font-black text-green-600 mt-2">= ${fmt(cosResult)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-lg">
+                    <p class="font-black text-blue-700 text-sm mb-3">
+                        📐 TANGENTE: tan(α ${sign} β)
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-blue-300">
+                        <p class="text-xs font-bold text-gray-600 mb-1">[tan(α) ${sign} tan(β)] / [1 ${operation === 'suma' ? '-' : '+'} tan(α)tan(β)]</p>
+                        <p class="text-sm text-gray-700">[${fmt(tanA)} ${sign} ${fmt(tanB)}] / [1 ${operation === 'suma' ? '-' : '+'} ${fmt(tanA * tanB)}]</p>
+                        <p class="text-2xl font-black text-blue-600 mt-2">= ${Math.abs(tanResult) > 1000 ? '∞' : fmt(tanResult)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateSuma() {
+            const alpha = parseInt(document.getElementById('alphaSlider').value);
+            const beta = parseInt(document.getElementById('betaSlider').value);
+            
+            document.getElementById('alphaValue').textContent = `${alpha}°`;
+            document.getElementById('betaValue').textContent = `${beta}°`;
+            
+            const result = currentOperation === 'suma' ? alpha + beta : alpha - beta;
+            document.getElementById('resultSum').textContent = `α ${currentOperation === 'suma' ? '+' : '-'} β = ${result}°`;
+            
+            drawSumaCanvas(alpha, beta, currentOperation);
+            updateSumaCalcs(alpha, beta, currentOperation);
+        }
+
+        // ==================== ÁNGULO DOBLE ====================
+        function drawDobleCanvas(alpha) {
+            const canvas = document.getElementById('dobleCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = 225;
+            const centerY = 225;
+            const radius = 180;
+
+            // Ejes
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(20, centerY);
+            ctx.lineTo(430, centerY);
+            ctx.moveTo(centerX, 20);
+            ctx.lineTo(centerX, 430);
+            ctx.stroke();
+
+            // Círculo
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            const radAlpha = toRad(alpha);
+            const radDoble = radAlpha * 2;
+
+            const x1 = centerX + radius * Math.cos(radAlpha);
+            const y1 = centerY - radius * Math.sin(radAlpha);
+
+            const x2 = centerX + radius * Math.cos(radDoble);
+            const y2 = centerY - radius * Math.sin(radDoble);
+
+            // Dibujar α
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x1, y1);
+            ctx.stroke();
+
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath();
+            ctx.arc(x1, y1, 8, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco α
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, radAlpha, true);
+            ctx.stroke();
+
+            ctx.fillStyle = '#a855f7';
+            ctx.font = 'bold 18px Inter';
+            ctx.fillText(`α=${alpha}°`, centerX + 70, centerY - 10);
+
+            // Dibujar 2α
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(x2, y2, 10, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco 2α
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 80, 0, radDoble, true);
+            ctx.stroke();
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 20px Inter';
+            ctx.fillText(`2α=${alpha * 2}°`, x2 + 15, y2 - 15);
+
+            // Etiquetas de ejes
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('0°', centerX + radius + 8, centerY + 5);
+            ctx.fillText('90°', centerX - 5, 15);
+        }
+
+        function updateDobleCalcs(alpha) {
+            const radAlpha = toRad(alpha);
+
+            const sinA = Math.sin(radAlpha);
+            const cosA = Math.cos(radAlpha);
+            const tanA = Math.tan(radAlpha);
+
+            const sin2A = 2 * sinA * cosA;
+            const cos2A = cosA * cosA - sinA * sinA;
+            const cos2A_v2 = 2 * cosA * cosA - 1;
+            const cos2A_v3 = 1 - 2 * sinA * sinA;
+            const tan2A = (2 * tanA) / (1 - tanA * tanA);
+
+            const panel = document.getElementById('dobleCalcs');
+            panel.innerHTML = `
+                <h2 class="text-3xl font-black text-indigo-900 mb-4 text-center">
+                    🔬 CÁLCULOS: 2α = ${alpha * 2}°
+                </h2>
+                
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mb-4 border-2 border-red-200 shadow-lg">
+                    <p class="font-black text-red-700 text-sm mb-3">
+                        📐 SENO: sin(2α) = 2sin(α)cos(α)
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-red-300">
+                        <p class="text-sm text-gray-700">2 × ${fmt(sinA)} × ${fmt(cosA)}</p>
+                        <p class="text-2xl font-black text-red-600 mt-2">= ${fmt(sin2A)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 mb-4 border-2 border-green-200 shadow-lg">
+                    <p class="font-black text-green-700 text-sm mb-3">
+                        📐 COSENO: cos(2α)
+                    </p>
+                    <div class="space-y-2">
+                        <div class="bg-white p-2 rounded-lg border-2 border-green-300">
+                            <p class="text-xs font-bold text-gray-600">Forma 1: cos²(α) - sin²(α)</p>
+                            <p class="text-lg font-black text-green-600">= ${fmt(cos2A)}</p>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border-2 border-green-300">
+                            <p class="text-xs font-bold text-gray-600">Forma 2: 2cos²(α) - 1</p>
+                            <p class="text-lg font-black text-green-600">= ${fmt(cos2A_v2)}</p>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border-2 border-green-300">
+                            <p class="text-xs font-bold text-gray-600">Forma 3: 1 - 2sin²(α)</p>
+                            <p class="text-lg font-black text-green-600">= ${fmt(cos2A_v3)}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-lg">
+                    <p class="font-black text-blue-700 text-sm mb-3">
+                        📐 TANGENTE: tan(2α) = 2tan(α) / [1 - tan²(α)]
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-blue-300">
+                        <p class="text-sm text-gray-700">2 × ${fmt(tanA)} / [1 - ${fmt(tanA * tanA)}]</p>
+                        <p class="text-2xl font-black text-blue-600 mt-2">= ${Math.abs(tan2A) > 1000 ? '∞' : fmt(tan2A)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateDoble() {
+            const alpha = parseInt(document.getElementById('dobleSlider').value);
+            
+            document.getElementById('dobleAlpha').textContent = `${alpha}°`;
+            document.getElementById('dobleResult').textContent = `${alpha * 2}°`;
+            
+            drawDobleCanvas(alpha);
+            updateDobleCalcs(alpha);
+        }
+
+        function initDobleQuickButtons() {
+            const container = document.getElementById('dobleQuickButtons');
+            const angles = [0, 15, 30, 45, 60];
+            
+            angles.forEach(angle => {
+                const button = document.createElement('button');
+                button.textContent = `${angle}°`;
+                button.className = 'py-2 px-2 rounded-lg bg-white border-2 border-purple-300 text-sm font-black text-purple-900 hover:bg-purple-100 hover:border-purple-500 transition-all active:scale-95 shadow-md';
+                button.onclick = () => {
+                    document.getElementById('dobleSlider').value = angle;
+                    updateDoble();
+                };
+                container.appendChild(button);
+            });
+        }
+
+        // ==================== ÁNGULO MITAD ====================
+        function drawMitadCanvas(alpha) {
+            const canvas = document.getElementById('mitadCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = 225;
+            const centerY = 225;
+            const radius = 180;
+
+            // Ejes
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(20, centerY);
+            ctx.lineTo(430, centerY);
+            ctx.moveTo(centerX, 20);
+            ctx.lineTo(centerX, 430);
+            ctx.stroke();
+
+            // Círculo
+            ctx.strokeStyle = '#14b8a6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            const radAlpha = toRad(alpha);
+            const radMitad = radAlpha / 2;
+
+            const x1 = centerX + radius * Math.cos(radAlpha);
+            const y1 = centerY - radius * Math.sin(radAlpha);
+
+            const x2 = centerX + radius * Math.cos(radMitad);
+            const y2 = centerY - radius * Math.sin(radMitad);
+
+            // Dibujar α
+            ctx.strokeStyle = '#14b8a6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x1, y1);
+            ctx.stroke();
+
+            ctx.fillStyle = '#14b8a6';
+            ctx.beginPath();
+            ctx.arc(x1, y1, 8, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco α
+            ctx.strokeStyle = '#14b8a6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 80, 0, radAlpha, true);
+            ctx.stroke();
+
+            ctx.fillStyle = '#14b8a6';
+            ctx.font = 'bold 18px Inter';
+            ctx.fillText(`α=${alpha}°`, centerX + 90, centerY - 20);
+
+            // Dibujar α/2
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(x2, y2, 10, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Arco α/2
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, radMitad, true);
+            ctx.stroke();
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 20px Inter';
+            ctx.fillText(`α/2=${Math.round(alpha / 2)}°`, x2 + 15, y2 - 15);
+
+            // Etiquetas de ejes
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('0°', centerX + radius + 8, centerY + 5);
+            ctx.fillText('90°', centerX - 5, 15);
+        }
+
+        function updateMitadCalcs(alpha) {
+            const radAlpha = toRad(alpha);
+
+            const sinA = Math.sin(radAlpha);
+            const cosA = Math.cos(radAlpha);
+
+            const sinHalf = Math.sqrt((1 - cosA) / 2);
+            const cosHalf = Math.sqrt((1 + cosA) / 2);
+            const tanHalf = sinA / (1 + cosA);
+            const tanHalf2 = (1 - cosA) / sinA;
+
+            const panel = document.getElementById('mitadCalcs');
+            panel.innerHTML = `
+                <h2 class="text-3xl font-black text-indigo-900 mb-4 text-center">
+                    🔬 CÁLCULOS: α/2 = ${Math.round(alpha / 2)}°
+                </h2>
+                
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 mb-4 border-2 border-red-200 shadow-lg">
+                    <p class="font-black text-red-700 text-sm mb-3">
+                        📐 SENO: sin(α/2) = √[(1 - cos(α))/2]
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-red-300">
+                        <p class="text-sm text-gray-700">√[(1 - ${fmt(cosA)})/2]</p>
+                        <p class="text-sm text-gray-700">= √[${fmt((1 - cosA) / 2)}]</p>
+                        <p class="text-2xl font-black text-red-600 mt-2">= ${fmt(sinHalf)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-xl p-4 mb-4 border-2 border-green-200 shadow-lg">
+                    <p class="font-black text-green-700 text-sm mb-3">
+                        📐 COSENO: cos(α/2) = √[(1 + cos(α))/2]
+                    </p>
+                    <div class="bg-white p-3 rounded-lg border-2 border-green-300">
+                        <p class="text-sm text-gray-700">√[(1 + ${fmt(cosA)})/2]</p>
+                        <p class="text-sm text-gray-700">= √[${fmt((1 + cosA) / 2)}]</p>
+                        <p class="text-2xl font-black text-green-600 mt-2">= ${fmt(cosHalf)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-lg">
+                    <p class="font-black text-blue-700 text-sm mb-3">
+                        📐 TANGENTE: tan(α/2)
+                    </p>
+                    <div class="space-y-2">
+                        <div class="bg-white p-2 rounded-lg border-2 border-blue-300">
+                            <p class="text-xs font-bold text-gray-600">Forma 1: sin(α) / [1 + cos(α)]</p>
+                            <p class="text-lg font-black text-blue-600">= ${isNaN(tanHalf) ? '∞' : fmt(tanHalf)}</p>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg border-2 border-blue-300">
+                            <p class="text-xs font-bold text-gray-600">Forma 2: [1 - cos(α)] / sin(α)</p>
+                            <p class="text-lg font-black text-blue-600">= ${isNaN(tanHalf2) ? '∞' : fmt(tanHalf2)}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateMitad() {
+            const alpha = parseInt(document.getElementById('mitadSlider').value);
+            
+            document.getElementById('mitadAlpha').textContent = `${alpha}°`;
+            document.getElementById('mitadResult').textContent = `${Math.round(alpha / 2)}°`;
+            
+            drawMitadCanvas(alpha);
+            updateMitadCalcs(alpha);
+        }
+
+        function initMitadQuickButtons() {
+            const container = document.getElementById('mitadQuickButtons');
+            const angles = [60, 90, 120, 150, 180];
+            
+            angles.forEach(angle => {
+                const button = document.createElement('button');
+                button.textContent = `${angle}°`;
+                button.className = 'py-2 px-2 rounded-lg bg-white border-2 border-teal-300 text-sm font-black text-teal-900 hover:bg-teal-100 hover:border-teal-500 transition-all active:scale-95 shadow-md';
+                button.onclick = () => {
+                    document.getElementById('mitadSlider').value = angle;
+                    updateMitad();
+                };
+                container.appendChild(button);
+            });
+        }
+
+        // Event Listeners
+        document.getElementById('alphaSlider').addEventListener('input', updateSuma);
+        document.getElementById('betaSlider').addEventListener('input', updateSuma);
+        document.getElementById('dobleSlider').addEventListener('input', updateDoble);
+        document.getElementById('mitadSlider').addEventListener('input', updateMitad);
+
+        // Inicializar
+        initDobleQuickButtons();
+        initMitadQuickButtons();
+        updateSuma();
+        updateDoble();
+        updateMitad();
+    </script>
+</body>
+</html>

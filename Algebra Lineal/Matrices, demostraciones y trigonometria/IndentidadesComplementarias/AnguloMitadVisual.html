@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>¿Por qué cos del ángulo doble?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+  * { box-sizing: border-box; }
+  body { margin:0; background:#0f0f1a; color:#e0e0ff; font-family:'JetBrains Mono',monospace; display:flex; flex-direction:column; align-items:center; padding:24px; }
+  h1 { font-family:'Playfair Display',serif; font-size:1.8rem; color:#a78bfa; margin-bottom:4px; text-align:center; }
+  p.sub { color:#6b6b9a; font-size:.85rem; margin-bottom:18px; }
+  .tabs { display:flex; gap:12px; margin-bottom:18px; }
+  .tab { padding:10px 28px; border-radius:10px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.9rem; font-weight:700; border:2px solid #2d2d4e; background:#13132a; color:#8888bb; transition:all .2s; }
+  .tab.active { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+  .main { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  canvas { border:2px solid #2d2d4e; border-radius:14px; background:#0d0d1f; display:block; }
+  .panel { background:#13132a; border:1px solid #2d2d4e; border-radius:14px; padding:20px; width:300px; }
+  .panel h2 { font-family:'Playfair Display',serif; color:#7c3aed; font-size:1.1rem; margin:0 0 14px; }
+  label { color:#8888bb; font-size:.78rem; display:block; margin-bottom:4px; }
+  input[type=range] { width:100%; accent-color:#7c3aed; margin-bottom:14px; }
+  .formula { background:#0f0f22; border-left:3px solid #7c3aed; padding:10px 14px; border-radius:6px; font-size:.8rem; line-height:2; margin-top:10px; white-space:pre-line; }
+  .why { background:#0f1a0f; border-left:3px solid #34d399; padding:10px 14px; border-radius:6px; font-size:.78rem; line-height:1.8; margin-top:10px; color:#86efac; white-space:pre-line; }
+  .legend { display:flex; flex-direction:column; gap:7px; margin-top:14px; font-size:.78rem; }
+  .leg { display:flex; align-items:center; gap:10px; }
+  .dot { width:13px; height:13px; border-radius:50%; flex-shrink:0; }
+</style>
+</head>
+<body>
+<h1>¿Por qué cos del ángulo doble?</h1>
+<p class="sub">La mitad del ángulo siempre necesita el coseno del ángulo completo</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="setMode('sin',this)">sin(α/2)</div>
+  <div class="tab" onclick="setMode('cos',this)">cos(α/2)</div>
+</div>
+
+<div class="main">
+  <canvas id="cv" width="460" height="460"></canvas>
+  <div class="panel">
+    <h2 id="title"></h2>
+    <label>Ángulo α (el GRANDE): <span id="aLbl">60</span>°</label>
+    <input type="range" id="slA" min="10" max="170" value="60">
+    <div class="formula" id="formula"></div>
+    <div class="why" id="why"></div>
+    <div class="legend">
+      <div class="leg"><div class="dot" style="background:#f59e0b"></div> Ángulo α/2 (el que buscamos)</div>
+      <div class="leg"><div class="dot" style="background:#a78bfa"></div> Ángulo α (el doble)</div>
+      <div class="leg"><div class="dot" style="background:#34d399"></div> Componente que buscamos</div>
+      <div class="leg"><div class="dot" style="background:#ef4444"></div> cos(α) que usamos</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W=460, H=460;
+const cx=W/2, cy=H/2, R=180;
+let mode='sin';
+
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(3); }
+function fmt2(n){ return n.toFixed(2); }
+
+function setMode(m, el){
+  mode=m;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  update();
+}
+
+function drawBase(){
+  ctx.clearRect(0,0,W,H);
+  // grid
+  ctx.strokeStyle='#1a1a35'; ctx.lineWidth=1;
+  for(let i=-6;i<=6;i++){
+    const s=36;
+    ctx.beginPath(); ctx.moveTo(cx+i*s,20); ctx.lineTo(cx+i*s,H-20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(20,cy+i*s); ctx.lineTo(W-20,cy+i*s); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle='#3d3d6b'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(20,cy); ctx.lineTo(W-20,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,20); ctx.lineTo(cx,H-20); ctx.stroke();
+  // circle
+  ctx.strokeStyle='#2d2d5e'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,2*Math.PI); ctx.stroke();
+  // labels
+  ctx.fillStyle='#555580'; ctx.font='bold 13px JetBrains Mono';
+  ctx.fillText('0°', cx+R+6, cy+5);
+  ctx.fillText('180°', cx-R-46, cy+5);
+  ctx.fillText('90°', cx+6, cy-R-8);
+  ctx.fillText('270°', cx+6, cy+R+18);
+}
+
+function update(){
+  const A=+document.getElementById('slA').value;
+  document.getElementById('aLbl').textContent=A;
+  const half=A/2;
+  const rA=rad(A), rH=rad(half);
+  const cosA=Math.cos(rA), sinA=Math.sin(rA);
+
+  drawBase();
+
+  const xA=cx+R*Math.cos(rA), yA=cy-R*Math.sin(rA);
+  const xH=cx+R*Math.cos(rH), yH=cy-R*Math.sin(rH);
+
+  // --- cos(α) line on x axis (RED) ---
+  ctx.strokeStyle='#ef4444'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+cosA*R,cy); ctx.stroke();
+  ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(cx+cosA*R,cy,5,0,2*Math.PI); ctx.fill();
+  ctx.fillStyle='#fca5a5'; ctx.font='bold 14px JetBrains Mono';
+  const cosLabelX = cosA >= 0 ? cx+cosA*R/2-30 : cx+cosA*R/2-30;
+  ctx.fillText(`cos(α)=${fmt2(cosA)}`, cosLabelX, cy+22);
+
+  // --- arc α (purple, dashed) ---
+  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.arc(cx,cy,R,-rA,0); ctx.stroke();
+  ctx.setLineDash([]);
+  // line to α point
+  ctx.strokeStyle='#a78bfa'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(xA,yA); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#a78bfa'; ctx.beginPath(); ctx.arc(xA,yA,7,0,2*Math.PI); ctx.fill();
+  // arc label
+  ctx.fillStyle='#c4b5fd'; ctx.font='bold 14px JetBrains Mono';
+  const midA=rA/2;
+  ctx.fillText(`α=${A}°`, cx+105*Math.cos(midA)-10, cy-105*Math.sin(midA));
+
+  // --- arc α/2 (orange) ---
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.arc(cx,cy,60,0,-rH,true); ctx.stroke();
+  // line to α/2 point
+  ctx.strokeStyle='#f59e0b'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(xH,yH); ctx.stroke();
+  ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.arc(xH,yH,8,0,2*Math.PI); ctx.fill();
+  // arc label
+  ctx.fillStyle='#fde68a'; ctx.font='bold 14px JetBrains Mono';
+  const midH=rH/2;
+  ctx.fillText(`α/2=${half}°`, cx+68*Math.cos(midH)-20, cy-68*Math.sin(midH)-10);
+
+  if(mode==='sin'){
+    // sin(α/2) vertical projection (green)
+    ctx.strokeStyle='#34d399'; ctx.lineWidth=2.5; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(xH,yH); ctx.lineTo(xH,cy); ctx.stroke();
+    ctx.setLineDash([]);
+    // label
+    const sinH=Math.sin(rH);
+    ctx.fillStyle='#34d399'; ctx.font='bold 14px JetBrains Mono';
+    ctx.fillText(`sin(α/2)=${fmt2(sinH)}`, xH+10, cy-sinH*R/2);
+
+    const result=Math.sqrt(Math.max(0,(1-cosA)/2));
+    document.getElementById('title').textContent=`sin(α/2) con α=${A}°`;
+    document.getElementById('formula').textContent=
+`sin(${half}°) = √[(1 - cos(${A}°))/2]
+= √[(1 - ${fmt(cosA)})/2]
+= √[${fmt((1-cosA)/2)}]
+= ${fmt(result)}`;
+    document.getElementById('why').textContent=
+`Viene de despejar:
+cos(α) = 1 - 2sin²(α/2)
+→ sin²(α/2) = (1-cos(α))/2
+
+Por eso SIEMPRE necesitas
+cos del ángulo DOBLE (α).`;
+
+  } else {
+    // cos(α/2) horizontal projection (green)
+    const cosH=Math.cos(rH);
+    ctx.strokeStyle='#34d399'; ctx.lineWidth=2.5; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(xH,yH); ctx.lineTo(cx,yH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#34d399'; ctx.font='bold 14px JetBrains Mono';
+    ctx.fillText(`cos(α/2)=${fmt2(cosH)}`, cx+8, yH-10);
+
+    const result=Math.sqrt(Math.max(0,(1+cosA)/2));
+    document.getElementById('title').textContent=`cos(α/2) con α=${A}°`;
+    document.getElementById('formula').textContent=
+`cos(${half}°) = √[(1 + cos(${A}°))/2]
+= √[(1 + ${fmt(cosA)})/2]
+= √[${fmt((1+cosA)/2)}]
+= ${fmt(result)}`;
+    document.getElementById('why').textContent=
+`Viene de despejar:
+cos(α) = 2cos²(α/2) - 1
+→ cos²(α/2) = (1+cos(α))/2
+
+Por eso SIEMPRE necesitas
+cos del ángulo DOBLE (α).`;
+  }
+}
+
+document.getElementById('slA').addEventListener('input',update);
+update();
+</script>
+</body>
+</html>

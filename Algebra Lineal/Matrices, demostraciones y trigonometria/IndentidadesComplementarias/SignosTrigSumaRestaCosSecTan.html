@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>¿Por qué el signo + o -?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+  body { margin:0; background:#0f0f1a; color:#e0e0ff; font-family:'JetBrains Mono',monospace; display:flex; flex-direction:column; align-items:center; padding:20px; }
+  h1 { font-family:'Playfair Display',serif; font-size:1.6rem; color:#a78bfa; margin-bottom:4px; }
+  p.sub { color:#6b6b9a; font-size:.8rem; margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; justify-content:center; }
+  .tab { padding:8px 16px; border-radius:8px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:.8rem; font-weight:700; border:2px solid #2d2d4e; background:#13132a; color:#8888bb; transition:all .2s; }
+  .tab.active { background:#7c3aed; color:#fff; border-color:#7c3aed; }
+  .main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+  canvas { border:2px solid #2d2d4e; border-radius:12px; background:#0d0d1f; }
+  .panel { background:#13132a; border:1px solid #2d2d4e; border-radius:12px; padding:16px; width:260px; }
+  .panel h2 { font-family:'Playfair Display',serif; color:#7c3aed; font-size:1rem; margin:0 0 12px; }
+  label { color:#8888bb; font-size:.72rem; display:block; margin-bottom:3px; }
+  input[type=range] { width:100%; accent-color:#7c3aed; margin-bottom:10px; }
+  .formula { background:#0f0f22; border-left:3px solid #7c3aed; padding:8px 12px; border-radius:6px; font-size:.75rem; line-height:2; margin-top:10px; }
+  .why { background:#0f1a0f; border-left:3px solid #34d399; padding:8px 12px; border-radius:6px; font-size:.73rem; line-height:1.7; margin-top:8px; color:#86efac; }
+  .legend { display:flex; flex-direction:column; gap:6px; margin-top:10px; font-size:.72rem; }
+  .leg { display:flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+</style>
+</head>
+<body>
+<h1>¿Por qué el signo + o −?</h1>
+<p class="sub">Visualiza cómo la rotación determina el signo</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="setMode('sin_sum')">sin(A+B)</div>
+  <div class="tab" onclick="setMode('sin_diff')">sin(A−B)</div>
+  <div class="tab" onclick="setMode('cos_sum')">cos(A+B)</div>
+  <div class="tab" onclick="setMode('cos_diff')">cos(A−B)</div>
+  <div class="tab" onclick="setMode('tan_sum')">tan(A+B)</div>
+  <div class="tab" onclick="setMode('tan_diff')">tan(A−B)</div>
+</div>
+
+<div class="main">
+  <canvas id="cv" width="380" height="380"></canvas>
+  <div class="panel">
+    <h2 id="panelTitle">sin(A+B)</h2>
+    <label>Ángulo A: <span id="aLbl">30</span>°</label>
+    <input type="range" id="slA" min="5" max="70" value="30">
+    <label>Ángulo B: <span id="bLbl">40</span>°</label>
+    <input type="range" id="slB" min="5" max="70" value="40">
+    <div class="formula" id="formula"></div>
+    <div class="why" id="why"></div>
+    <div class="legend">
+      <div class="leg"><div class="dot" style="background:#f59e0b"></div> P en ángulo A</div>
+      <div class="leg"><div class="dot" style="background:#a78bfa"></div> P en ángulo A±B</div>
+      <div class="leg"><div class="dot" style="background:#34d399"></div> Componente que buscamos</div>
+      <div class="leg"><div class="dot" style="background:#ef4444"></div> Componente que resta/suma</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const cx=190, cy=190, R=155;
+let mode = 'sin_sum';
+
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(3); }
+
+function setMode(m){
+  mode = m;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  update();
+}
+
+function drawBase(){
+  ctx.clearRect(0,0,380,380);
+  ctx.strokeStyle='#1a1a35'; ctx.lineWidth=1;
+  for(let i=-5;i<=5;i++){
+    const s=31;
+    ctx.beginPath(); ctx.moveTo(cx+i*s,cy-160); ctx.lineTo(cx+i*s,cy+160); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-160,cy+i*s); ctx.lineTo(cx+160,cy+i*s); ctx.stroke();
+  }
+  ctx.strokeStyle='#3d3d6b'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(cx-165,cy); ctx.lineTo(cx+165,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-165); ctx.lineTo(cx,cy+165); ctx.stroke();
+  ctx.strokeStyle='#2d2d5e'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,2*Math.PI); ctx.stroke();
+  ctx.fillStyle='#4b4b7b'; ctx.font='11px JetBrains Mono';
+  ctx.fillText('x',cx+168,cy+4); ctx.fillText('y',cx+4,cy-168);
+  ctx.fillText('0°',cx+R+5,cy+14);
+}
+
+function drawPoint(angle, color, label, r=R){
+  const x=cx+r*Math.cos(angle), y=cy-r*Math.sin(angle);
+  ctx.strokeStyle=color; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+  ctx.fillStyle=color; ctx.beginPath(); ctx.arc(x,y,6,0,2*Math.PI); ctx.fill();
+  if(label){ ctx.fillStyle=color; ctx.font='bold 11px JetBrains Mono'; ctx.fillText(label,x+8,y-6); }
+  return {x,y};
+}
+
+function drawDash(x1,y1,x2,y2,color){
+  ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawArc(from, to, r, color, label){
+  ctx.strokeStyle=color; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,r,-from,-to,from>to); ctx.stroke();
+  const mid = (from+to)/2;
+  ctx.fillStyle=color; ctx.font='11px JetBrains Mono';
+  ctx.fillText(label, cx+(r+10)*Math.cos(mid), cy-(r+10)*Math.sin(mid));
+}
+
+function update(){
+  const A=+document.getElementById('slA').value;
+  const B=+document.getElementById('slB').value;
+  document.getElementById('aLbl').textContent=A;
+  document.getElementById('bLbl').textContent=B;
+
+  const rA=rad(A), rB=rad(B);
+  const sinA=Math.sin(rA), cosA=Math.cos(rA);
+  const sinB=Math.sin(rB), cosB=Math.cos(rB);
+
+  drawBase();
+
+  let formula='', why='', title='';
+
+  if(mode==='sin_sum'){
+    title='sin(A+B) → signo +';
+    const rAB=rA+rB;
+    const p1=drawPoint(rA,'#f59e0b',`A=${A}°`);
+    const p2=drawPoint(rAB,'#a78bfa',`A+B=${A+B}°`);
+    drawDash(p2.x,p2.y,p2.x,cy,'#34d399');
+    drawArc(rA,rAB,50,'#a78bfa',`+B`);
+    ctx.fillStyle='#34d399'; ctx.font='bold 11px JetBrains Mono';
+    ctx.fillText(`sin(A+B)=${fmt(Math.sin(rAB))}`,cx+5,cy+20);
+    formula=`sin(A+B) = sin(A)cos(B) + cos(A)sin(B)\n= ${fmt(sinA)}·${fmt(cosB)} + ${fmt(cosA)}·${fmt(sinB)}\n= ${fmt(Math.sin(rAB))}`;
+    why=`+ porque sumar B sube el punto.\nAmbas componentes contribuyen\npositivamente a la altura (y').`;
+  }
+  else if(mode==='sin_diff'){
+    title='sin(A−B) → signo −';
+    const rAB=rA-rB;
+    const p1=drawPoint(rA,'#f59e0b',`A=${A}°`);
+    const p2=drawPoint(rAB,'#a78bfa',`A-B=${A-B}°`);
+    drawDash(p2.x,p2.y,p2.x,cy,'#34d399');
+    drawArc(rA,rAB,50,'#ef4444',`-B`);
+    ctx.fillStyle='#34d399'; ctx.font='bold 11px JetBrains Mono';
+    ctx.fillText(`sin(A-B)=${fmt(Math.sin(rAB))}`,cx+5,cy+20);
+    formula=`sin(A-B) = sin(A)cos(B) - cos(A)sin(B)\n= ${fmt(sinA)}·${fmt(cosB)} - ${fmt(cosA)}·${fmt(sinB)}\n= ${fmt(Math.sin(rAB))}`;
+    why=`- porque restar B baja el punto.\nEl segundo ángulo va en dirección\nopuesta, su aporte resta altura.`;
+  }
+  else if(mode==='cos_sum'){
+    title='cos(A+B) → signo −';
+    const rAB=rA+rB;
+    const p1=drawPoint(rA,'#f59e0b',`A=${A}°`);
+    const p2=drawPoint(rAB,'#a78bfa',`A+B=${A+B}°`);
+    drawDash(p2.x,p2.y,p2.x,cy,'#ef4444');
+    drawDash(cx,cy,p2.x,cy,'#34d399');
+    drawArc(rA,rAB,50,'#a78bfa',`+B`);
+    ctx.fillStyle='#34d399'; ctx.font='bold 11px JetBrains Mono';
+    ctx.fillText(`cos(A+B)=${fmt(Math.cos(rAB))}`,cx+5,cy-15);
+    formula=`cos(A+B) = cos(A)cos(B) - sin(A)sin(B)\n= ${fmt(cosA)}·${fmt(cosB)} - ${fmt(sinA)}·${fmt(sinB)}\n= ${fmt(Math.cos(rAB))}`;
+    why=`- porque sumar B sube el punto,\nalejándolo del eje x. La componente\ny SIEMPRE perjudica a x' al rotar.`;
+  }
+  else if(mode==='cos_diff'){
+    title='cos(A−B) → signo +';
+    const rAB=rA-rB;
+    const p1=drawPoint(rA,'#f59e0b',`A=${A}°`);
+    const p2=drawPoint(rAB,'#a78bfa',`A-B=${A-B}°`);
+    drawDash(p2.x,p2.y,p2.x,cy,'#ef4444');
+    drawDash(cx,cy,p2.x,cy,'#34d399');
+    drawArc(rA,rAB,50,'#34d399',`-B`);
+    ctx.fillStyle='#34d399'; ctx.font='bold 11px JetBrains Mono';
+    ctx.fillText(`cos(A-B)=${fmt(Math.cos(rAB))}`,cx+5,cy-15);
+    formula=`cos(A-B) = cos(A)cos(B) + sin(A)sin(B)\n= ${fmt(cosA)}·${fmt(cosB)} + ${fmt(sinA)}·${fmt(sinB)}\n= ${fmt(Math.cos(rAB))}`;
+    why=`+ porque restar B baja el punto,\nacercándolo al eje x. La componente\ny AYUDA a x' cuando bajas.`;
+  }
+  else if(mode==='tan_sum'){
+    title='tan(A+B) → num+ den−';
+    const rAB=rA+rB;
+    drawPoint(rA,'#f59e0b',`A=${A}°`);
+    drawPoint(rAB,'#a78bfa',`A+B=${A+B}°`);
+    const tanA=Math.tan(rA), tanB=Math.tan(rB);
+    const result=(tanA+tanB)/(1-tanA*tanB);
+    formula=`tan(A+B) = sin(A+B)/cos(A+B)\n= [sin(A)cos(B)+cos(A)sin(B)] /\n  [cos(A)cos(B)-sin(A)sin(B)]\n÷cos(A)cos(B):\n= [tan(A)+tan(B)] / [1-tan(A)tan(B)]\n= ${fmt(result)}`;
+    why=`Numerador + → hereda signo de sin(A+B)\nDenominador - → hereda signo de cos(A+B)\ntan = sin/cos, los signos se heredan.`;
+  }
+  else if(mode==='tan_diff'){
+    title='tan(A−B) → num− den+';
+    const rAB=rA-rB;
+    drawPoint(rA,'#f59e0b',`A=${A}°`);
+    drawPoint(rAB,'#a78bfa',`A-B=${A-B}°`);
+    const tanA=Math.tan(rA), tanB=Math.tan(rB);
+    const result=(tanA-tanB)/(1+tanA*tanB);
+    formula=`tan(A-B) = sin(A-B)/cos(A-B)\n= [sin(A)cos(B)-cos(A)sin(B)] /\n  [cos(A)cos(B)+sin(A)sin(B)]\n÷cos(A)cos(B):\n= [tan(A)-tan(B)] / [1+tan(A)tan(B)]\n= ${fmt(result)}`;
+    why=`Numerador - → hereda signo de sin(A-B)\nDenominador + → hereda signo de cos(A-B)\ntan = sin/cos, los signos se heredan.`;
+  }
+
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('formula').textContent=formula;
+  document.getElementById('why').textContent=why;
+}
+
+document.getElementById('slA').addEventListener('input',update);
+document.getElementById('slB').addEventListener('input',update);
+update();
+</script>
+</body>
+</html>
