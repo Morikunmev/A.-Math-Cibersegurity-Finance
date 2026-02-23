@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Área de un Triángulo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #161622;
+    --border: #2a2a3e;
+    --accent: #f0d060;
+    --accent2: #60c8f0;
+    --accent3: #f06090;
+    --green: #60f0a0;
+    --text: #e0e0f0;
+    --muted: #9090b0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+
+  header { text-align: center; margin-bottom: 40px; }
+  header h1 { font-size: 2.8rem; font-weight: 600; color: #fff; letter-spacing: -1px; }
+  header h1 span { color: var(--accent); font-style: italic; }
+  header p { color: var(--muted); font-style: italic; margin-top: 8px; }
+
+  .formulas-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .formula-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .formula-box.main { border-top: 3px solid var(--accent); }
+  .formula-box.alt { border-top: 3px solid var(--accent2); }
+  .formula-box .tag { font-size: .72rem; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .formula-box .eq { font-family: 'DM Mono', monospace; font-size: 1.5rem; color: var(--accent); }
+  .formula-box.alt .eq { color: var(--accent2); }
+  .formula-box .sub { font-size: .82rem; color: var(--muted); margin-top: 8px; font-style: italic; }
+
+  /* INTERACTIVE */
+  .interactive {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 32px;
+  }
+  .interactive h2 { font-size: 1.3rem; color: var(--accent); margin-bottom: 20px; font-style: italic; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+
+  .controls { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px; }
+  .control-group { flex: 1; min-width: 150px; }
+  .control-group label { display: block; font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .control-group label span { color: var(--accent); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+
+  .canvas-row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  canvas { border: 1px solid var(--border); background: #0d0d18; flex-shrink: 0; }
+
+  .result-panel { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
+
+  .rcard { background: #181828; border: 1px solid var(--border); padding: 12px 16px; }
+  .rcard .rlabel { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .rcard .rval { font-family: 'DM Mono', monospace; font-size: 1.4rem; }
+  .rcard .rval.y { color: var(--accent); }
+  .rcard .rval.b { color: var(--accent2); }
+  .rcard .rval.g { color: var(--green); }
+  .rcard .rval.p { color: var(--accent3); }
+
+  .step-formula { background: #181828; border-left: 3px solid var(--accent); padding: 10px 14px; font-family: 'DM Mono', monospace; font-size: .78rem; line-height: 2; color: #d8d8f0; white-space: pre-line; }
+  .step-formula .hl { color: var(--accent); }
+  .step-formula .hl2 { color: var(--green); }
+
+  /* CASES */
+  .cases-title { font-size: 1.2rem; color: var(--accent2); margin-bottom: 14px; font-style: italic; }
+  .cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .ccard { background: var(--surface); border: 1px solid var(--border); padding: 18px; cursor: pointer; transition: border-color .2s; position: relative; }
+  .ccard:hover { border-color: var(--accent); }
+  .ccard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .ccard.c90::before { background: var(--green); }
+  .ccard.c60::before { background: var(--accent); }
+  .ccard.c45::before { background: var(--accent2); }
+  .ccard.c30::before { background: var(--accent3); }
+  .ccard .cangle { font-family: 'DM Mono', monospace; font-size: 1.8rem; color: #fff; margin-bottom: 4px; }
+  .ccard .cname { font-size: .82rem; color: var(--muted); font-style: italic; margin-bottom: 10px; }
+  .ccard .cformula { font-family: 'DM Mono', monospace; font-size: .72rem; color: #d8d8f0; line-height: 1.7; }
+
+  /* DEMO */
+  .demo { background: var(--surface); border: 1px solid var(--border); padding: 28px; margin-bottom: 32px; }
+  .demo h2 { font-size: 1.3rem; color: var(--green); margin-bottom: 20px; font-style: italic; }
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 14px; }
+  .snum { font-family: 'DM Mono', monospace; font-size: .72rem; background: var(--accent); color: #000; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 500; margin-top: 2px; }
+  .scontent strong { color: #fff; font-size: .95rem; display: block; margin-bottom: 3px; }
+  .scontent p { color: var(--muted); font-size: .88rem; font-style: italic; margin-bottom: 6px; }
+  .scode { background: #181828; border-left: 2px solid var(--green); padding: 8px 12px; font-family: 'DM Mono', monospace; font-size: .76rem; color: #d8d8f0; line-height: 1.8; }
+
+  /* TABLE */
+  .tbl-section { background: var(--surface); border: 1px solid var(--border); padding: 28px; }
+  .tbl-section h2 { font-size: 1.3rem; color: var(--accent3); margin-bottom: 18px; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; font-family: 'DM Mono', monospace; font-size: .8rem; }
+  th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--accent3); color: var(--accent3); font-size: .68rem; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #d8d8f0; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(240,96,144,.04); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <h1>Área de un <span>Triángulo</span></h1>
+    <p>fórmula clásica y trigonométrica — visualización interactiva</p>
+  </header>
+
+  <div class="formulas-row">
+    <div class="formula-box main">
+      <div class="tag">Fórmula Trigonométrica</div>
+      <div class="eq">A = ½·a·b·sin(α)</div>
+      <div class="sub">Dos lados y el ángulo entre ellos</div>
+    </div>
+    <div class="formula-box alt">
+      <div class="tag">Fórmula Clásica</div>
+      <div class="eq">A = b·h / 2</div>
+      <div class="sub">donde h = a·sin(α)</div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE -->
+  <div class="interactive">
+    <h2>Explorador Interactivo</h2>
+    <div class="controls">
+      <div class="control-group">
+        <label>Lado a <span id="aVal">8</span></label>
+        <input type="range" id="slA" min="2" max="15" value="8" step="0.5">
+      </div>
+      <div class="control-group">
+        <label>Lado b <span id="bVal">12</span></label>
+        <input type="range" id="slB" min="2" max="15" value="12" step="0.5">
+      </div>
+      <div class="control-group">
+        <label>Ángulo α <span id="angVal">30</span>°</label>
+        <input type="range" id="slAng" min="5" max="175" value="30">
+      </div>
+    </div>
+    <div class="canvas-row">
+      <canvas id="cv" width="420" height="300"></canvas>
+      <div class="result-panel">
+        <div class="rcard"><div class="rlabel">Lado a</div><div class="rval y" id="resA">8.0</div></div>
+        <div class="rcard"><div class="rlabel">Lado b</div><div class="rval b" id="resB">12.0</div></div>
+        <div class="rcard"><div class="rlabel">Ángulo α</div><div class="rval y" id="resAng">30°</div></div>
+        <div class="rcard"><div class="rlabel">Altura h = a·sin(α)</div><div class="rval g" id="resH">4.00</div></div>
+        <div class="rcard"><div class="rlabel">Área</div><div class="rval p" id="resArea">24.00</div></div>
+        <div class="step-formula" id="stepF"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CASES -->
+  <p class="cases-title">Casos especiales — clic para aplicar</p>
+  <div class="cases-grid">
+    <div class="ccard c90" onclick="setAngle(90)">
+      <div class="cangle">90°</div>
+      <div class="cname">Triángulo rectángulo</div>
+      <div class="cformula">A = ½·a·b·sin(90°)<br>= ½·a·b·1<br>= ½·a·b</div>
+    </div>
+    <div class="ccard c60" onclick="setAngle(60)">
+      <div class="cangle">60°</div>
+      <div class="cname">Equilátero / 60°</div>
+      <div class="cformula">A = ½·a·b·sin(60°)<br>= ½·a·b·(√3/2)<br>= a·b·√3/4</div>
+    </div>
+    <div class="ccard c45" onclick="setAngle(45)">
+      <div class="cangle">45°</div>
+      <div class="cname">Ángulo de 45°</div>
+      <div class="cformula">A = ½·a·b·sin(45°)<br>= ½·a·b·(√2/2)<br>= a·b·√2/4</div>
+    </div>
+    <div class="ccard c30" onclick="setAngle(30)">
+      <div class="cangle">30°</div>
+      <div class="cname">Ángulo de 30°</div>
+      <div class="cformula">A = ½·a·b·sin(30°)<br>= ½·a·b·(1/2)<br>= a·b/4</div>
+    </div>
+  </div>
+
+  <!-- DEMO -->
+  <div class="demo">
+    <h2>Demostración: A = ½·a·b·sin(α)</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="snum">1</div>
+        <div class="scontent">
+          <strong>Trazar altura h desde el vértice superior</strong>
+          <p>Trazamos perpendicular desde el vértice B hacia el lado b</p>
+          <div class="scode">Triángulo rectángulo formado con hipotenusa = a</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="snum">2</div>
+        <div class="scontent">
+          <strong>Relacionar h con el lado a</strong>
+          <p>En el triángulo rectángulo: sin = opuesto / hipotenusa</p>
+          <div class="scode">sin(α) = h / a</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="snum">3</div>
+        <div class="scontent">
+          <strong>Despejar h</strong>
+          <div class="scode">h = a·sin(α)</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="snum">4</div>
+        <div class="scontent">
+          <strong>Sustituir en la fórmula clásica</strong>
+          <div class="scode">A = (b × h) / 2
+  = (b × a·sin(α)) / 2
+  = ½·a·b·sin(α) ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tbl-section">
+    <h2>Casos Especiales (a=8, b=12)</h2>
+    <table>
+      <thead>
+        <tr><th>Ángulo α</th><th>sin(α)</th><th>Altura h</th><th>Área</th><th>Simplificado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>30°</td><td>1/2</td><td>4</td><td>24</td><td>a·b/4</td></tr>
+        <tr><td>45°</td><td>√2/2 ≈ 0.707</td><td>5.66</td><td>33.94</td><td>a·b·√2/4</td></tr>
+        <tr><td>60°</td><td>√3/2 ≈ 0.866</td><td>6.93</td><td>41.57</td><td>a·b·√3/4</td></tr>
+        <tr><td>90°</td><td>1</td><td>8</td><td>48</td><td>½·a·b</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(2); }
+
+function draw(a, b, alpha){
+  const W=420, H=300;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0d0d18'; ctx.fillRect(0,0,W,H);
+
+  const scale=18;
+  const rA=rad(alpha);
+  const Ax=60, Ay=H-50;
+  const Bx=Ax+b*scale, By=Ay;
+  const Cx=Ax+a*scale*Math.cos(rA), Cy=Ay-a*scale*Math.sin(rA);
+  const hx=Cx, hy=Ay;
+
+  // Fill triangle
+  ctx.fillStyle='rgba(96,240,160,0.06)';
+  ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Bx,By); ctx.lineTo(Cx,Cy); ctx.closePath(); ctx.fill();
+
+  // Height dashed line (green)
+  ctx.strokeStyle='#60f0a0'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(Cx,Cy); ctx.lineTo(hx,hy); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Right angle marker
+  const sq=7;
+  ctx.strokeStyle='#60f0a0'; ctx.lineWidth=1;
+  ctx.strokeRect(hx,hy-sq,sq,sq);
+
+  // Base b (blue)
+  ctx.strokeStyle='#60c8f0'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Bx,By); ctx.stroke();
+
+  // Side a (yellow)
+  ctx.strokeStyle='#f0d060'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Cx,Cy); ctx.stroke();
+
+  // Side (Cx to Bx) gray
+  ctx.strokeStyle='#4444aa'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(Cx,Cy); ctx.lineTo(Bx,By); ctx.stroke();
+
+  // Angle arc
+  ctx.strokeStyle='#f0d060'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(Ax,Ay,30,-rA,0); ctx.stroke();
+  ctx.fillStyle='#f0d060'; ctx.font='13px DM Mono,monospace';
+  ctx.fillText('α', Ax+34, Ay-8);
+
+  // Labels
+  ctx.font='bold 12px DM Mono,monospace';
+  ctx.fillStyle='#f0d060'; ctx.fillText(`a=${fmt(a)}`, Ax+a*scale*Math.cos(rA)/2-30, Ay-a*scale*Math.sin(rA)/2-6);
+  ctx.fillStyle='#60c8f0'; ctx.fillText(`b=${fmt(b)}`, Ax+b*scale/2-15, Ay+18);
+  ctx.fillStyle='#60f0a0'; ctx.fillText(`h=${fmt(a*Math.sin(rA))}`, hx+6, (Cy+hy)/2);
+
+  // Points
+  [[Ax,Ay,'A'],[Bx,By,'B'],[Cx,Cy,'C']].forEach(([x,y,l])=>{
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x,y,5,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#ccc'; ctx.font='bold 12px DM Mono,monospace';
+    ctx.fillText(l, x+(l==='B'?6:-16), y+(l==='C'?-8:16));
+  });
+}
+
+function update(){
+  const a=+document.getElementById('slA').value;
+  const b=+document.getElementById('slB').value;
+  const ang=+document.getElementById('slAng').value;
+  document.getElementById('aVal').textContent=a;
+  document.getElementById('bVal').textContent=b;
+  document.getElementById('angVal').textContent=ang;
+  const h=a*Math.sin(rad(ang));
+  const area=0.5*a*b*Math.sin(rad(ang));
+  document.getElementById('resA').textContent=fmt(a);
+  document.getElementById('resB').textContent=fmt(b);
+  document.getElementById('resAng').textContent=ang+'°';
+  document.getElementById('resH').textContent=fmt(h);
+  document.getElementById('resArea').textContent=fmt(area);
+  document.getElementById('stepF').innerHTML=
+    `<span class="hl">A</span> = ½·a·b·sin(α)\n` +
+    `  = ½·${fmt(a)}·${fmt(b)}·sin(${ang}°)\n` +
+    `  = ½·${fmt(a*b)}·${fmt(Math.sin(rad(ang)))}\n` +
+    `  = <span class="hl">${fmt(area)}</span> u²`;
+  draw(a,b,ang);
+}
+
+function setAngle(a){ document.getElementById('slAng').value=a; update(); }
+
+document.getElementById('slA').addEventListener('input',update);
+document.getElementById('slB').addEventListener('input',update);
+document.getElementById('slAng').addEventListener('input',update);
+update();
+</script>
+</body>
+</html>

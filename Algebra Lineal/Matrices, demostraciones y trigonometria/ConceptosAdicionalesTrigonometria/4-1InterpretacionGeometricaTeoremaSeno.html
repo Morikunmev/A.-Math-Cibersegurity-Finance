@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,400&display=swap');
+
+  body {
+    background: #0a0a0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .card {
+    background: #111118;
+    border: 1px solid #1e1e2e;
+    border-top: 3px solid #60c8f0;
+    padding: 32px 36px;
+    max-width: 620px;
+    width: 100%;
+  }
+
+  .card h2 {
+    font-size: .7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #60c8f0;
+    margin-bottom: 24px;
+  }
+
+  .canvas-wrap {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  canvas { display: block; flex-shrink: 0; }
+
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .78rem;
+  }
+
+  .leg-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .leg-text { color: #d0d0e8; }
+  .leg-text span { font-weight: 500; }
+  .leg-text span.a { color: #f0d060; }
+  .leg-text span.b { color: #60c8f0; }
+  .leg-text span.c { color: #f06090; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>Interpretación Geométrica</h2>
+  <div class="canvas-wrap">
+    <canvas id="cv" width="320" height="300"></canvas>
+    <div class="legend">
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#f0d060"></div>
+        <div class="leg-text">Lado <span class="a">a</span> opuesto a <span class="a">α</span></div>
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#60c8f0"></div>
+        <div class="leg-text">Lado <span class="b">b</span> opuesto a <span class="b">β</span></div>
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background:#f06090"></div>
+        <div class="leg-text">Lado <span class="c">c</span> opuesto a <span class="c">γ</span></div>
+      </div>
+      <div style="border-top:1px solid #1e1e2e; margin-top:6px; padding-top:10px;">
+        <div style="font-size:.7rem; color:#555580; line-height:2;">
+          α + β + γ = 180°<br>
+          <span style="color:#f0d060">a</span>/sin(<span style="color:#f0d060">α</span>) = 
+          <span style="color:#60c8f0">b</span>/sin(<span style="color:#60c8f0">β</span>) = 
+          <span style="color:#f06090">c</span>/sin(<span style="color:#f06090">γ</span>)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W = 320, H = 300;
+
+// Triangle vertices (fixed nice triangle)
+const A = { x: 40,  y: 260 };
+const B = { x: 280, y: 260 };
+const C = { x: 120, y: 60  };
+
+function midpoint(p1, p2) {
+  return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+}
+
+function angle(vertex, p1, p2) {
+  const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+  const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+  return Math.atan2(v1.y * v2.x - v1.x * v2.y, v1.x * v2.x + v1.y * v2.y);
+}
+
+function atan2Angle(from, to) {
+  return Math.atan2(to.y - from.y, to.x - from.x);
+}
+
+// Draw filled triangle
+ctx.fillStyle = 'rgba(96,200,240,.06)';
+ctx.beginPath();
+ctx.moveTo(A.x, A.y);
+ctx.lineTo(B.x, B.y);
+ctx.lineTo(C.x, C.y);
+ctx.closePath();
+ctx.fill();
+
+// Draw sides with colors
+const sides = [
+  { p1: B, p2: C, color: '#f0d060', label: 'a' },  // side a opposite to α (at A)
+  { p1: A, p2: C, color: '#60c8f0', label: 'b' },  // side b opposite to β (at B)
+  { p1: A, p2: B, color: '#f06090', label: 'c' },  // side c opposite to γ (at C)
+];
+
+sides.forEach(({ p1, p2, color, label }) => {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+
+  // Label at midpoint, offset perpendicular
+  const mid = midpoint(p1, p2);
+  const ang = atan2Angle(p1, p2);
+  const perp = ang + Math.PI / 2;
+  const offset = 18;
+  const lx = mid.x + Math.cos(perp) * offset;
+  const ly = mid.y + Math.sin(perp) * offset;
+
+  ctx.fillStyle = color;
+  ctx.font = 'bold 15px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, lx, ly);
+});
+
+// Draw angle arcs and labels
+const arcR = 28;
+const angles = [
+  { v: A, p1: B, p2: C, color: '#f0d060', label: 'α' },
+  { v: B, p1: A, p2: C, color: '#60c8f0', label: 'β' },
+  { v: C, p1: A, p2: B, color: '#f06090', label: 'γ' },
+];
+
+angles.forEach(({ v, p1, p2, color, label }) => {
+  const ang1 = atan2Angle(v, p1);
+  const ang2 = atan2Angle(v, p2);
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(v.x, v.y, arcR, Math.min(ang1, ang2), Math.max(ang1, ang2));
+  ctx.stroke();
+
+  // Label in middle of arc
+  const midAng = (ang1 + ang2) / 2;
+  const lDist = arcR + 16;
+  ctx.fillStyle = color;
+  ctx.font = 'bold 13px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, v.x + Math.cos(midAng) * lDist, v.y + Math.sin(midAng) * lDist);
+});
+
+// Draw vertices
+const verts = [
+  { p: A, label: 'A', ox: -16, oy: 16 },
+  { p: B, label: 'B', ox: 14,  oy: 16 },
+  { p: C, label: 'C', ox: -4,  oy: -16 },
+];
+
+verts.forEach(({ p, label, ox, oy }) => {
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 5, 0, 2 * Math.PI);
+  ctx.fill();
+
+  ctx.fillStyle = '#9090b0';
+  ctx.font = '13px IBM Plex Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, p.x + ox, p.y + oy);
+});
+
+// Height dashed line from C to base
+const foot = { x: C.x, y: A.y };
+ctx.strokeStyle = 'rgba(255,255,255,.15)';
+ctx.lineWidth = 1;
+ctx.setLineDash([4, 4]);
+ctx.beginPath();
+ctx.moveTo(C.x, C.y);
+ctx.lineTo(foot.x, foot.y);
+ctx.stroke();
+ctx.setLineDash([]);
+
+// Right angle marker at foot
+const sq = 7;
+ctx.strokeStyle = 'rgba(255,255,255,.25)';
+ctx.lineWidth = 1;
+ctx.strokeRect(foot.x, foot.y - sq, sq, sq);
+
+// label h
+ctx.fillStyle = 'rgba(255,255,255,.3)';
+ctx.font = '11px IBM Plex Mono';
+ctx.textAlign = 'left';
+ctx.textBaseline = 'middle';
+ctx.fillText('h', foot.x + 12, (C.y + foot.y) / 2);
+</script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teorema del Coseno</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Fira+Code:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0c0a08;
+    --surf: #151210;
+    --border: #2a2218;
+    --a: #ff9f43;
+    --b: #54a0ff;
+    --c: #ff6b6b;
+    --g: #1dd1a1;
+    --text: #e8e0d8;
+    --muted: #7a6a58;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fira Code', monospace;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 50% 30% at 80% 10%, rgba(255,159,67,.05), transparent 60%),
+      radial-gradient(ellipse 40% 50% at 10% 90%, rgba(84,160,255,.04), transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 36px 20px; }
+
+  header { margin-bottom: 32px; }
+  .tag { font-size: .62rem; color: var(--a); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  header h1 { font-family: 'Syne', sans-serif; font-size: 3rem; color: #fff; line-height: 1; font-weight: 800; }
+  header h1 em { color: var(--a); font-style: normal; }
+  header p { color: var(--muted); font-size: .78rem; margin-top: 8px; }
+
+  /* PITÁGORAS CONNECTION */
+  .pythag {
+    background: var(--surf); border: 1px solid var(--border);
+    border-left: 4px solid var(--g);
+    padding: 14px 20px; margin-bottom: 24px;
+    font-size: .78rem; color: var(--text);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .pythag .icon { font-size: 1.5rem; }
+  .pythag strong { color: var(--g); }
+
+  /* 3 FORMULAS */
+  .formulas { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  @media(max-width:600px){ .formulas { grid-template-columns: 1fr; } }
+  .fcard { background: var(--surf); border: 1px solid var(--border); padding: 16px; cursor: pointer; transition: border-color .2s; }
+  .fcard:hover { border-color: var(--a); }
+  .fcard.active-f { border-color: var(--a); background: #1a1510; }
+  .fcard .fname { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .fcard .feq { font-size: .9rem; color: #fff; line-height: 1.6; }
+  .fcard .feq .fa { color: var(--a); }
+  .fcard .feq .fb { color: var(--b); }
+  .fcard .feq .fc { color: var(--c); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .tab {
+    padding: 11px 22px; cursor: pointer;
+    font-size: .72rem; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 2px solid transparent;
+    transition: all .2s; user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--a); border-bottom-color: var(--a); }
+
+  .panel { display: none; padding: 24px 0; }
+  .panel.active { display: block; }
+
+  /* EXPLORER */
+  .explorer { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+  @media(max-width:700px){ .explorer { grid-template-columns: 1fr; } }
+
+  canvas { background: #0e0c0a; border: 1px solid var(--border); display: block; width: 100%; }
+
+  .side { display: flex; flex-direction: column; gap: 10px; }
+
+  .cgroup { background: var(--surf); border: 1px solid var(--border); padding: 14px; }
+  .cgroup label { font-size: .62rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 5px; }
+  .cgroup label span { color: var(--a); font-size: .82rem; }
+  input[type=range] { width: 100%; accent-color: var(--a); margin-bottom: 4px; }
+
+  .rcard { background: var(--surf); border: 1px solid var(--border); padding: 11px 14px; }
+  .rcard .rl { font-size: .6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .rcard .rv { font-size: 1.3rem; font-weight: 500; }
+  .rcard .rv.oa { color: var(--a); }
+  .rcard .rv.ob { color: var(--b); }
+  .rcard .rv.oc { color: var(--c); }
+  .rcard .rv.og { color: var(--g); }
+
+  .cbox {
+    background: #0e0c0a; border: 1px solid var(--border);
+    border-left: 3px solid var(--a);
+    padding: 10px 14px; font-size: .72rem;
+    color: var(--text); line-height: 2; white-space: pre-line;
+  }
+  .cbox .hl { color: var(--a); }
+
+  /* DEMO */
+  .demo { display: flex; flex-direction: column; gap: 16px; }
+  .dstep { display: flex; gap: 14px; }
+  .dnum {
+    width: 26px; height: 26px; flex-shrink: 0;
+    background: transparent; border: 1px solid var(--a);
+    color: var(--a); font-size: .68rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .dc strong { color: #fff; font-size: .88rem; display: block; margin-bottom: 4px; }
+  .dc p { color: var(--muted); font-size: .78rem; margin-bottom: 6px; }
+  .dc .dcode {
+    background: #0e0c0a; border-left: 2px solid var(--g);
+    padding: 8px 12px; font-size: .72rem;
+    color: var(--text); line-height: 1.9; white-space: pre-line;
+  }
+  .dc .dcode .hl { color: var(--g); }
+  .dc .dcode .hla { color: var(--a); }
+
+  /* EXERCISES */
+  .exgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:600px){ .exgrid { grid-template-columns: 1fr; } }
+  .excard { background: var(--surf); border: 1px solid var(--border); overflow: hidden; }
+  .excard .exh { background: #0e0c0a; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .excard .exh span { font-size: .6rem; color: var(--a); text-transform: uppercase; letter-spacing: 1px; }
+  .excard .exh h3 { color: #fff; font-size: .88rem; margin-top: 3px; }
+  .excard .exb { padding: 12px 14px; }
+  .excard .datos { font-size: .7rem; color: var(--muted); margin-bottom: 8px; }
+  .excard .sol {
+    background: #0e0c0a; border-left: 2px solid var(--g);
+    padding: 8px 10px; font-size: .7rem;
+    color: var(--text); line-height: 1.9; white-space: pre-line;
+  }
+  .excard .sol .hl { color: var(--g); }
+
+  /* WHEN TO USE */
+  .when { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:600px){ .when { grid-template-columns: 1fr; } }
+  .wcard { background: var(--surf); border: 1px solid var(--border); padding: 18px; }
+  .wcard h3 { font-size: .72rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .wcard.yes h3 { color: var(--g); }
+  .wcard.no h3 { color: #ff4444; }
+  .wcard .wi { display: flex; gap: 10px; margin-bottom: 8px; font-size: .76rem; }
+  .wcard .wb { width: 16px; flex-shrink: 0; }
+  .wcard.yes .wb { color: var(--g); }
+  .wcard.no .wb { color: #ff7777; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="tag">Trigonometría — Ley de los cosenos</div>
+  <h1>Teorema del <em>Coseno</em></h1>
+  <p>Generalización del Teorema de Pitágoras para cualquier triángulo</p>
+</header>
+
+<div class="pythag">
+  <div class="icon">⚡</div>
+  <div>Si α = 90°, entonces cos(90°) = 0 y la fórmula se convierte en <strong>a² = b² + c²</strong> — ¡el Teorema de Pitágoras!</div>
+</div>
+
+<!-- 3 FORMULAS -->
+<div class="formulas">
+  <div class="fcard active-f" onclick="setFormula(0,this)" id="fc0">
+    <div class="fname">Para calcular lado a</div>
+    <div class="feq"><span class="fa">a²</span> = b² + c² − 2bc·cos(<span class="fa">α</span>)</div>
+  </div>
+  <div class="fcard" onclick="setFormula(1,this)" id="fc1">
+    <div class="fname">Para calcular lado b</div>
+    <div class="feq"><span class="fb">b²</span> = a² + c² − 2ac·cos(<span class="fb">β</span>)</div>
+  </div>
+  <div class="fcard" onclick="setFormula(2,this)" id="fc2">
+    <div class="fname">Para calcular lado c</div>
+    <div class="feq"><span class="fc">c²</span> = a² + b² − 2ab·cos(<span class="fc">γ</span>)</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('explorer',this)">Explorador</div>
+  <div class="tab" onclick="showTab('demo',this)">Demostración</div>
+  <div class="tab" onclick="showTab('ejercicios',this)">Ejercicios</div>
+  <div class="tab" onclick="showTab('uso',this)">¿Cuándo usarlo?</div>
+</div>
+
+<!-- PANEL EXPLORER -->
+<div class="panel active" id="panel-explorer">
+  <div class="explorer">
+    <canvas id="cv" height="340"></canvas>
+    <div class="side">
+      <div class="cgroup">
+        <label>Lado b <span id="vb">7</span></label>
+        <input type="range" id="slb" min="2" max="14" value="7" step="0.5">
+        <label style="margin-top:8px">Lado c <span id="vc">5</span></label>
+        <input type="range" id="slc" min="2" max="14" value="5" step="0.5">
+        <label style="margin-top:8px">Ángulo α (entre b y c) <span id="vang">60</span>°</label>
+        <input type="range" id="slang" min="5" max="175" value="60">
+      </div>
+      <div class="rcard"><div class="rl">Lado b</div><div class="rv ob" id="resb">7.0</div></div>
+      <div class="rcard"><div class="rl">Lado c</div><div class="rv oc" id="resc">5.0</div></div>
+      <div class="rcard"><div class="rl">Ángulo α</div><div class="rv oa" id="resang">60°</div></div>
+      <div class="rcard"><div class="rl">Lado a calculado</div><div class="rv og" id="resa">—</div></div>
+      <div class="cbox" id="cbox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL DEMO -->
+<div class="panel" id="panel-demo">
+  <div class="demo">
+    <div class="dstep"><div class="dnum">1</div><div class="dc">
+      <strong>Colocar triángulo en coordenadas</strong>
+      <p>A en el origen, B en el eje x, C libre</p>
+      <div class="dcode">A = (0, 0)
+B = (c, 0)
+C = (b·cos(γ), b·sin(γ))</div>
+    </div></div>
+    <div class="dstep"><div class="dnum">2</div><div class="dc">
+      <strong>Aplicar fórmula de distancia de B a C</strong>
+      <div class="dcode">a² = (b·cos(γ) − c)² + (b·sin(γ))²</div>
+    </div></div>
+    <div class="dstep"><div class="dnum">3</div><div class="dc">
+      <strong>Expandir</strong>
+      <div class="dcode">a² = b²·cos²(γ) − 2bc·cos(γ) + c²
+   + b²·sin²(γ)</div>
+    </div></div>
+    <div class="dstep"><div class="dnum">4</div><div class="dc">
+      <strong>Agrupar b²</strong>
+      <div class="dcode">a² = b²(cos²(γ) + sin²(γ)) + c² − 2bc·cos(γ)</div>
+    </div></div>
+    <div class="dstep"><div class="dnum">5</div><div class="dc">
+      <strong>Aplicar identidad pitagórica</strong>
+      <p>cos²(γ) + sin²(γ) = 1</p>
+      <div class="dcode">a² = b²·<span class="hl">1</span> + c² − 2bc·cos(γ)
+<span class="hl">a² = b² + c² − 2bc·cos(γ) ✓</span></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- PANEL EJERCICIOS -->
+<div class="panel" id="panel-ejercicios">
+  <div class="exgrid">
+    <div class="excard">
+      <div class="exh"><span>Ejercicio 1</span><h3>Calcular lado c</h3></div>
+      <div class="exb">
+        <div class="datos">Datos: a = 8, b = 10, γ = 60°</div>
+        <div class="sol">c² = a² + b² − 2ab·cos(γ)
+c² = 64 + 100 − 2(8)(10)·cos(60°)
+c² = 164 − 160·(1/2)
+c² = 164 − 80 = 84
+c = √84 = 2√21
+<span class="hl">c ≈ 9.17 ✓</span></div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exh"><span>Ejercicio 2</span><h3>Calcular ángulo γ</h3></div>
+      <div class="exb">
+        <div class="datos">Datos: a = 5, b = 12, c = 13</div>
+        <div class="sol">cos(γ) = (a² + b² − c²)/(2ab)
+cos(γ) = (25 + 144 − 169)/120
+cos(γ) = 0/120 = 0
+γ = arccos(0)
+<span class="hl">γ = 90° ✓ (triángulo rectángulo)</span>
+
+Verif: 5² + 12² = 169 = 13² ✓</div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exh"><span>Ejercicio 3</span><h3>Calcular lado a</h3></div>
+      <div class="exb">
+        <div class="datos">Datos: b = 5, c = 7, α = 60°</div>
+        <div class="sol">a² = b² + c² − 2bc·cos(α)
+a² = 25 + 49 − 2(5)(7)·cos(60°)
+a² = 74 − 70·(1/2)
+a² = 74 − 35 = 39
+<span class="hl">a = √39 ≈ 6.24 ✓</span></div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exh"><span>Ejercicio 4</span><h3>Triángulo equilátero</h3></div>
+      <div class="exb">
+        <div class="datos">Datos: a = b = 10, γ = 60°</div>
+        <div class="sol">c² = a² + b² − 2ab·cos(γ)
+c² = 100 + 100 − 200·(1/2)
+c² = 200 − 100 = 100
+c = √100
+<span class="hl">c = 10 ✓ (equilátero)</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL USO -->
+<div class="panel" id="panel-uso">
+  <div class="when">
+    <div class="wcard yes">
+      <h3>✓ Cuándo SÍ usar Teorema del Coseno</h3>
+      <div class="wi"><div class="wb">→</div><div>Conoces dos lados y el ángulo entre ellos (SAS)</div></div>
+      <div class="wi"><div class="wb">→</div><div>Conoces los tres lados y quieres un ángulo (SSS)</div></div>
+      <div class="wi"><div class="wb">→</div><div>El triángulo NO es rectángulo y no tienes ángulos</div></div>
+    </div>
+    <div class="wcard no">
+      <h3>✗ Cuándo NO necesitas el Teorema del Coseno</h3>
+      <div class="wi"><div class="wb">→</div><div>Triángulo rectángulo → usa Pitágoras directamente</div></div>
+      <div class="wi"><div class="wb">→</div><div>Conoces dos ángulos y un lado → usa Teorema del Seno</div></div>
+      <div class="wi"><div class="wb">→</div><div>Solo necesitas un ángulo faltante → suma de ángulos = 180°</div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(2); }
+
+function showTab(id, el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='explorer') update();
+}
+
+function setFormula(idx, el){
+  document.querySelectorAll('.fcard').forEach(f=>f.classList.remove('active-f'));
+  el.classList.add('active-f');
+}
+
+function draw(b, c, alpha){
+  const W=cv.offsetWidth||500, H=340;
+  cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0e0c0a'; ctx.fillRect(0,0,W,H);
+
+  const a=Math.sqrt(b*b+c*c-2*b*c*Math.cos(rad(alpha)));
+  const maxS=Math.max(a,b,c);
+  const sc=Math.min((W-80)/maxS,(H-70)/maxS)*0.9;
+
+  const Ax=40, Ay=H-45;
+  const Bx=Ax+a*sc, By=Ay;
+  // Angle gamma at A between sides b and c
+  // Using: cos(gamma_at_A) from the triangle
+  // gamma_at_A is opposite to side a... so place C using angle alpha at A
+  const Cx=Ax+b*sc*Math.cos(rad(alpha)), Cy=Ay-b*sc*Math.sin(rad(alpha));
+
+  // Fill
+  ctx.fillStyle='rgba(255,159,67,.05)';
+  ctx.beginPath(); ctx.moveTo(Ax,Ay); ctx.lineTo(Bx,By); ctx.lineTo(Cx,Cy); ctx.closePath(); ctx.fill();
+
+  // Sides
+  const sides=[
+    [Cx,Cy,Bx,By,'#ff9f43',`a=${fmt(a)}`],
+    [Ax,Ay,Cx,Cy,'#54a0ff',`b=${fmt(b)}`],
+    [Ax,Ay,Bx,By,'#ff6b6b',`c=${fmt(c)}`],
+  ];
+  sides.forEach(([x1,y1,x2,y2,col,lbl])=>{
+    ctx.strokeStyle=col; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.fillStyle=col; ctx.font='bold 11px Fira Code,monospace';
+    ctx.fillText(lbl,(x1+x2)/2+(col==='#54a0ff'?-36:8),(y1+y2)/2+(col==='#ff6b6b'?18:-8));
+  });
+
+  // Angle alpha arc at A
+  ctx.strokeStyle='#ff9f43'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(Ax,Ay,30,-rad(alpha),0); ctx.stroke();
+  ctx.fillStyle='#ff9f43'; ctx.font='bold 11px Fira Code,monospace';
+  ctx.fillText(`α=${Math.round(alpha)}°`,Ax+34,Ay-8);
+
+  // Points
+  [[Ax,Ay,'A'],[Bx,By,'B'],[Cx,Cy,'C']].forEach(([x,y,l])=>{
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x,y,5,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#c0b0a0'; ctx.font='12px Fira Code';
+    ctx.fillText(l,x+(l==='B'?8:-18),y+(l==='C'?-10:18));
+  });
+
+  // Coordinates labels
+  ctx.fillStyle='var(--muted)'; ctx.font='10px Fira Code';
+  ctx.fillStyle='#555040';
+  ctx.fillText('A=(0,0)',Ax-6,Ay+32);
+  ctx.fillText(`B=(${fmt(a*sc/sc)},0)`,Bx-40,By+32);
+}
+
+function update(){
+  const b=+document.getElementById('slb').value;
+  const c=+document.getElementById('slc').value;
+  const ang=+document.getElementById('slang').value;
+  document.getElementById('vb').textContent=b;
+  document.getElementById('vc').textContent=c;
+  document.getElementById('vang').textContent=ang;
+  document.getElementById('resb').textContent=fmt(b);
+  document.getElementById('resc').textContent=fmt(c);
+  document.getElementById('resang').textContent=ang+'°';
+  const a2=b*b+c*c-2*b*c*Math.cos(rad(ang));
+  const a=Math.sqrt(Math.max(0,a2));
+  document.getElementById('resa').textContent=fmt(a);
+  document.getElementById('cbox').innerHTML=
+    `<span class="hl">a²</span> = b² + c² − 2bc·cos(α)\n`+
+    `   = ${fmt(b)}² + ${fmt(c)}² − 2·${fmt(b)}·${fmt(c)}·cos(${ang}°)\n`+
+    `   = ${fmt(b*b)} + ${fmt(c*c)} − ${fmt(2*b*c)}·${fmt(Math.cos(rad(ang)))}\n`+
+    `   = ${fmt(a2)}\n`+
+    `<span class="hl">a  = ${fmt(a)}</span>`;
+  draw(b,c,ang);
+}
+
+['slb','slc','slang'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+window.addEventListener('resize',update);
+update();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Círculo Trigonométrico</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Syne:wght@700&display=swap');
+  :root {
+    --bg:#080c10; --surf:#0e1520; --border:#1a2535;
+    --q1:#60f0a0; --q2:#60c8f0; --q3:#f06090; --q4:#f0d060;
+    --text:#d8e8f0; --muted:#5a7a9a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Fira Code',monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px;}
+  h1{font-family:'Syne',sans-serif;font-size:1.8rem;color:#fff;margin-bottom:4px;text-align:center;}
+  h1 span{color:var(--q1);}
+  p.sub{color:var(--muted);font-size:.75rem;margin-bottom:20px;text-align:center;}
+
+  .layout{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+
+  canvas{border:1px solid var(--border);background:#0a0f18;border-radius:8px;cursor:crosshair;}
+
+  .sidebar{display:flex;flex-direction:column;gap:12px;width:240px;}
+
+  .info-box{background:var(--surf);border:1px solid var(--border);padding:14px;}
+  .info-box .ibl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .info-box .ival{font-size:1rem;color:#fff;line-height:1.8;}
+  .info-box .ival span.a{color:var(--q1);}
+  .info-box .ival span.b{color:var(--q2);}
+  .info-box .ival span.c{color:var(--q4);}
+
+  .legend{background:var(--surf);border:1px solid var(--border);padding:14px;}
+  .legend .ibl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .leg-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.72rem;}
+  .leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+  .astc{background:var(--surf);border:1px solid var(--border);padding:14px;}
+  .astc .ibl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .astc-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .astc-cell{padding:8px;font-size:.68rem;line-height:1.6;text-align:center;border:1px solid var(--border);}
+  .astc-cell .qnum{font-size:.6rem;color:var(--muted);margin-bottom:2px;}
+  .astc-cell .qsign{font-size:.8rem;font-weight:500;}
+</style>
+</head>
+<body>
+
+<h1>Círculo <span>Trigonométrico</span></h1>
+<p class="sub">Mueve el mouse sobre el círculo para ver valores • Haz clic en un punto notable</p>
+
+<div class="layout">
+  <canvas id="cv" width="620" height="620"></canvas>
+  <div class="sidebar">
+
+    <div class="info-box" id="infoBox">
+      <div class="ibl">Punto seleccionado</div>
+      <div class="ival">
+        <span class="b">Hover sobre el círculo</span>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="ibl">Cuadrantes</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--q1)"></div><span style="color:var(--q1)">Q I</span>&nbsp;sin+, cos+, tan+</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--q2)"></div><span style="color:var(--q2)">Q II</span>&nbsp;sin+, cos−, tan−</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--q3)"></div><span style="color:var(--q3)">Q III</span>&nbsp;sin−, cos−, tan+</div>
+      <div class="leg-row"><div class="leg-dot" style="background:var(--q4)"></div><span style="color:var(--q4)">Q IV</span>&nbsp;sin−, cos+, tan−</div>
+    </div>
+
+    <div class="astc">
+      <div class="ibl">All Students Take Calculus</div>
+      <div class="astc-grid">
+        <div class="astc-cell" style="border-color:var(--q2);color:var(--q2)">
+          <div class="qnum">Q II</div>
+          <div class="qsign">Students<br>sin +</div>
+        </div>
+        <div class="astc-cell" style="border-color:var(--q1);color:var(--q1)">
+          <div class="qnum">Q I</div>
+          <div class="qsign">All<br>todo +</div>
+        </div>
+        <div class="astc-cell" style="border-color:var(--q3);color:var(--q3)">
+          <div class="qnum">Q III</div>
+          <div class="qsign">Take<br>tan +</div>
+        </div>
+        <div class="astc-cell" style="border-color:var(--q4);color:var(--q4)">
+          <div class="qnum">Q IV</div>
+          <div class="qsign">Calculus<br>cos +</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W=620, H=620, cx=310, cy=310, R=210;
+
+// Notable angles with labels
+const notable = [
+  {deg:0,   rad:'0',      lbl:'0°',    coord:'(1, 0)',        cos:'1',      sin:'0',      radLbl:'0'},
+  {deg:30,  rad:'π/6',    lbl:'30°',   coord:'(√3/2, 1/2)',  cos:'√3/2',  sin:'1/2',    radLbl:'π/6'},
+  {deg:45,  rad:'π/4',    lbl:'45°',   coord:'(√2/2, √2/2)', cos:'√2/2',  sin:'√2/2',   radLbl:'π/4'},
+  {deg:60,  rad:'π/3',    lbl:'60°',   coord:'(1/2, √3/2)',  cos:'1/2',   sin:'√3/2',   radLbl:'π/3'},
+  {deg:90,  rad:'π/2',    lbl:'90°',   coord:'(0, 1)',        cos:'0',     sin:'1',      radLbl:'π/2'},
+  {deg:120, rad:'2π/3',   lbl:'120°',  coord:'(-1/2, √3/2)', cos:'-1/2',  sin:'√3/2',   radLbl:'2π/3'},
+  {deg:135, rad:'3π/4',   lbl:'135°',  coord:'(-√2/2, √2/2)',cos:'-√2/2', sin:'√2/2',   radLbl:'3π/4'},
+  {deg:150, rad:'5π/6',   lbl:'150°',  coord:'(-√3/2, 1/2)', cos:'-√3/2', sin:'1/2',    radLbl:'5π/6'},
+  {deg:180, rad:'π',      lbl:'180°',  coord:'(-1, 0)',       cos:'-1',    sin:'0',      radLbl:'π'},
+  {deg:210, rad:'7π/6',   lbl:'210°',  coord:'(-√3/2,-1/2)', cos:'-√3/2', sin:'-1/2',   radLbl:'7π/6'},
+  {deg:225, rad:'5π/4',   lbl:'225°',  coord:'(-√2/2,-√2/2)',cos:'-√2/2', sin:'-√2/2',  radLbl:'5π/4'},
+  {deg:240, rad:'4π/3',   lbl:'240°',  coord:'(-1/2,-√3/2)', cos:'-1/2',  sin:'-√3/2',  radLbl:'4π/3'},
+  {deg:270, rad:'3π/2',   lbl:'270°',  coord:'(0, -1)',       cos:'0',     sin:'-1',     radLbl:'3π/2'},
+  {deg:300, rad:'5π/3',   lbl:'300°',  coord:'(1/2,-√3/2)',  cos:'1/2',   sin:'-√3/2',  radLbl:'5π/3'},
+  {deg:315, rad:'7π/4',   lbl:'315°',  coord:'(√2/2,-√2/2)', cos:'√2/2',  sin:'-√2/2',  radLbl:'7π/4'},
+  {deg:330, rad:'11π/6',  lbl:'330°',  coord:'(√3/2,-1/2)',  cos:'√3/2',  sin:'-1/2',   radLbl:'11π/6'},
+];
+
+function qColor(deg){
+  if(deg>=0&&deg<90) return '#60f0a0';
+  if(deg>=90&&deg<180) return '#60c8f0';
+  if(deg>=180&&deg<270) return '#f06090';
+  return '#f0d060';
+}
+
+function drawBase(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0a0f18'; ctx.fillRect(0,0,W,H);
+
+  // Quadrant fills
+  const quads=[
+    {start:0,end:-Math.PI/2,color:'rgba(96,240,160,.04)'},
+    {start:-Math.PI/2,end:-Math.PI,color:'rgba(96,200,240,.04)'},
+    {start:Math.PI,end:Math.PI/2,color:'rgba(240,96,144,.04)'},
+    {start:Math.PI/2,end:0,color:'rgba(240,208,96,.04)'},
+  ];
+  quads.forEach(({start,end,color})=>{
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,R,start,end,true); ctx.closePath(); ctx.fill();
+  });
+
+  // Grid
+  ctx.strokeStyle='#111a28'; ctx.lineWidth=1;
+  for(let i=-4;i<=4;i++){
+    const s=R/2;
+    ctx.beginPath(); ctx.moveTo(cx+i*s,cy-R-10); ctx.lineTo(cx+i*s,cy+R+10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-R-10,cy+i*s); ctx.lineTo(cx+R+10,cy+i*s); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle='#2a3a50'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(cx-R-20,cy); ctx.lineTo(cx+R+20,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-R-20); ctx.lineTo(cx,cy+R+20); ctx.stroke();
+
+  // Circle
+  ctx.strokeStyle='#2a3a50'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,2*Math.PI); ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle='#3a5a7a'; ctx.font='11px Fira Code';
+  ctx.fillText('1',cx+R+4,cy-5);
+  ctx.fillText('-1',cx-R-22,cy-5);
+  ctx.fillText('1',cx+4,cy-R-6);
+  ctx.fillText('-1',cx+4,cy+R+14);
+}
+
+function drawPoints(highlight=null){
+  notable.forEach(n=>{
+    const rad=-n.deg*Math.PI/180;
+    const px=cx+R*Math.cos(rad);
+    const py=cy+R*Math.sin(rad);
+    const col=qColor(n.deg);
+    const isHL=highlight&&highlight.deg===n.deg;
+
+    // Line from center (always visible, colored)
+    ctx.strokeStyle=col+'55';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+    ctx.setLineDash([]);
+    if(isHL){
+      ctx.strokeStyle=col+'cc'; ctx.lineWidth=2;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(px,py); ctx.stroke();
+    }
+
+    // Point
+    ctx.fillStyle=isHL?col:col+'99';
+    ctx.beginPath(); ctx.arc(px,py,isHL?7:5,0,2*Math.PI); ctx.fill();
+    if(isHL){
+      ctx.strokeStyle=col; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(px,py,10,0,2*Math.PI); ctx.stroke();
+    }
+
+    // Degree label outside circle
+    const lDist=R+22;
+    const lx=cx+lDist*Math.cos(rad);
+    const ly=cy+lDist*Math.sin(rad);
+    ctx.fillStyle=isHL?col:'#ffffff';
+    ctx.font=`${isHL?'bold ':''}11px Fira Code`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.lbl,lx,ly);
+
+    // Radian label (smaller, just outside degree)
+    const rDist=R+36;
+    const rx=cx+rDist*Math.cos(rad);
+    const ry=cy+rDist*Math.sin(rad);
+    ctx.fillStyle=isHL?'#fff':col+'ee';
+    ctx.font='9px Fira Code';
+    ctx.fillText(n.radLbl,rx,ry);
+
+    // Coord label inside circle (always shown)
+    const cDist=R-30;
+    const clx=cx+cDist*Math.cos(rad);
+    const cly=cy+cDist*Math.sin(rad);
+    ctx.fillStyle=isHL?'#ffffff':col+'dd';
+    ctx.font=`${isHL?'bold ':''}8px Fira Code`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(n.coord,clx,cly);
+  });
+
+  // Center dot
+  ctx.fillStyle='#fff';
+  ctx.beginPath(); ctx.arc(cx,cy,4,0,2*Math.PI); ctx.fill();
+}
+
+function updateInfo(n){
+  const col=qColor(n.deg);
+  const q=n.deg<90?'I':n.deg<180?'II':n.deg<270?'III':'IV';
+  const tanVal=n.sin==='0'?'0':n.cos==='0'?'∞':`${n.sin}/${n.cos}`;
+  document.getElementById('infoBox').innerHTML=`
+    <div class="ibl">Punto — <span style="color:${col}">Cuadrante ${q}</span></div>
+    <div class="ival">
+      <span class="b">${n.lbl} = ${n.rad}</span><br>
+      <span class="a">cos = ${n.cos}</span><br>
+      <span class="a">sin = ${n.sin}</span><br>
+      <span class="c">tan = ${tanVal}</span><br>
+      <span style="color:#556">${n.coord}</span>
+    </div>`;
+}
+
+let hoveredPoint=null;
+
+cv.addEventListener('mousemove',e=>{
+  const rect=cv.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(W/rect.width);
+  const my=(e.clientY-rect.top)*(H/rect.height);
+  let closest=null, minD=999;
+  notable.forEach(n=>{
+    const rad=-n.deg*Math.PI/180;
+    const px=cx+R*Math.cos(rad);
+    const py=cy+R*Math.sin(rad);
+    const d=Math.hypot(mx-px,my-py);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(minD<22&&closest!==hoveredPoint){
+    hoveredPoint=closest;
+    drawBase(); drawPoints(hoveredPoint);
+    updateInfo(hoveredPoint);
+  } else if(minD>=22&&hoveredPoint){
+    hoveredPoint=null;
+    drawBase(); drawPoints(null);
+    document.getElementById('infoBox').innerHTML=`<div class="ibl">Punto seleccionado</div><div class="ival"><span class="b">Hover sobre el círculo</span></div>`;
+  }
+});
+
+cv.addEventListener('click',e=>{
+  const rect=cv.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)*(W/rect.width);
+  const my=(e.clientY-rect.top)*(H/rect.height);
+  let closest=null, minD=999;
+  notable.forEach(n=>{
+    const rad=-n.deg*Math.PI/180;
+    const px=cx+R*Math.cos(rad);
+    const py=cy+R*Math.sin(rad);
+    const d=Math.hypot(mx-px,my-py);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(minD<30&&closest){ updateInfo(closest); }
+});
+
+drawBase();
+drawPoints(null);
+</script>
+</body>
+</html>

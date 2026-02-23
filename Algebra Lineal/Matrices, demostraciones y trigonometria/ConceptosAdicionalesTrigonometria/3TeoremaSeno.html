@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teorema del Seno</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #080c10;
+    --surf: #0e1520;
+    --border: #1a2535;
+    --a: #00e5ff;
+    --b: #ff6b35;
+    --c: #a8ff47;
+    --ang: #ffcc00;
+    --text: #d8e8f0;
+    --muted: #6080a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,229,255,.04) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 80% 80%, rgba(168,255,71,.03) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 36px 20px; }
+
+  /* HEADER */
+  header { margin-bottom: 36px; }
+  .tag { font-size: .65rem; color: var(--a); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; opacity: .8; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: 3rem; color: #fff; line-height: 1; }
+  header h1 em { color: var(--a); font-style: italic; }
+  header p { color: var(--muted); font-size: .8rem; margin-top: 10px; }
+
+  /* FORMULA BANNER */
+  .banner {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--a);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .banner .label { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+  .banner .eq { font-size: 1.2rem; color: #fff; line-height: 2; }
+  .banner .eq span.ca { color: var(--a); }
+  .banner .eq span.cb { color: var(--b); }
+  .banner .eq span.cc { color: var(--c); }
+  .banner .eq span.r { color: var(--ang); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 12px 24px; cursor: pointer;
+    font-size: .75rem; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); border-bottom: 2px solid transparent;
+    transition: all .2s; user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--a); border-bottom-color: var(--a); }
+
+  .panel { display: none; padding: 28px 0; }
+  .panel.active { display: block; }
+
+  /* INTERACTIVE EXPLORER */
+  .explorer { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+  @media(max-width:700px){ .explorer { grid-template-columns: 1fr; } }
+
+  canvas { background: #0a0f18; border: 1px solid var(--border); display: block; width: 100%; }
+
+  .side-panel { display: flex; flex-direction: column; gap: 12px; }
+
+  .ctrl { background: var(--surf); border: 1px solid var(--border); padding: 14px; }
+  .ctrl label { font-size: .65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .ctrl label span { color: var(--a); font-size: .85rem; }
+  input[type=range] { width: 100%; accent-color: var(--a); margin-bottom: 2px; }
+
+  .rcard { background: var(--surf); border: 1px solid var(--border); padding: 12px 14px; }
+  .rcard .rl { font-size: .62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .rcard .rv { font-size: 1.3rem; font-weight: 500; }
+  .rcard .rv.a { color: var(--a); }
+  .rcard .rv.b { color: var(--b); }
+  .rcard .rv.c { color: var(--c); }
+
+  .ratio-box {
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--ang);
+    padding: 12px 14px;
+    font-size: .75rem;
+    line-height: 2;
+    color: var(--text);
+    white-space: pre-line;
+  }
+  .ratio-box .hl { color: var(--ang); }
+
+  /* DEMO STEPS */
+  .demo { display: flex; flex-direction: column; gap: 16px; }
+  .dstep { display: flex; gap: 16px; }
+  .dnum {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: transparent; border: 1px solid var(--a);
+    color: var(--a); font-size: .7rem;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .dcontent strong { color: #fff; font-size: .9rem; display: block; margin-bottom: 4px; }
+  .dcontent p { color: var(--muted); font-size: .8rem; margin-bottom: 6px; font-style: italic; font-family: 'Playfair Display', serif; }
+  .dcode {
+    background: #0a0f18;
+    border-left: 2px solid var(--a);
+    padding: 8px 12px;
+    font-size: .73rem;
+    color: var(--text);
+    line-height: 1.9;
+    white-space: pre-line;
+  }
+  .dcode .hl { color: var(--a); }
+
+  /* EXERCISES */
+  .exgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .exgrid { grid-template-columns: 1fr; } }
+  .excard { background: var(--surf); border: 1px solid var(--border); overflow: hidden; }
+  .excard .exhead { background: #0a0f18; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .excard .exhead span { font-size: .62rem; color: var(--a); text-transform: uppercase; letter-spacing: 1px; }
+  .excard .exhead h3 { color: #fff; font-size: .9rem; margin-top: 4px; }
+  .excard .exbody { padding: 14px 16px; }
+  .excard .datos { font-size: .72rem; color: var(--muted); margin-bottom: 10px; }
+  .excard .sol {
+    background: #0a0f18; border-left: 2px solid var(--c);
+    padding: 8px 12px; font-size: .72rem;
+    color: var(--text); line-height: 1.9; white-space: pre-line;
+  }
+  .excard .sol .hl { color: var(--c); }
+
+  /* USAGE TABLE */
+  .usage { background: var(--surf); border: 1px solid var(--border); padding: 20px; margin-top: 16px; }
+  .usage h3 { color: var(--ang); font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .urow { display: flex; gap: 12px; margin-bottom: 8px; font-size: .78rem; }
+  .urow .ub { color: var(--a); width: 20px; flex-shrink: 0; }
+  .urow .ut { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="tag">Trigonometría — Ley de los senos</div>
+  <h1>Teorema del <em>Seno</em></h1>
+  <p>Relación entre lados y ángulos opuestos en cualquier triángulo</p>
+</header>
+
+<div class="banner">
+  <div>
+    <div class="label">Fórmula principal</div>
+    <div class="eq">
+      <span class="ca">a</span>/sin(<span class="ca">α</span>) = <span class="cb">b</span>/sin(<span class="cb">β</span>) = <span class="cc">c</span>/sin(<span class="cc">γ</span>) = 2<span class="r">R</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('explorer',this)">Explorador</div>
+  <div class="tab" onclick="showTab('demo',this)">Demostración</div>
+  <div class="tab" onclick="showTab('ejercicios',this)">Ejercicios</div>
+  <div class="tab" onclick="showTab('uso',this)">¿Cuándo usarlo?</div>
+</div>
+
+<!-- PANEL: EXPLORER -->
+<div class="panel active" id="panel-explorer">
+  <div class="explorer">
+    <canvas id="cv" height="340"></canvas>
+    <div class="side-panel">
+      <div class="ctrl">
+        <label>Ángulo α <span id="vA">30</span>°</label>
+        <input type="range" id="slA" min="15" max="150" value="30">
+        <label style="margin-top:8px">Ángulo β <span id="vB">45</span>°</label>
+        <input type="range" id="slB" min="15" max="150" value="45">
+        <label style="margin-top:8px">Lado a <span id="vSideA">8</span></label>
+        <input type="range" id="slSideA" min="2" max="14" value="8" step="0.5">
+      </div>
+      <div class="rcard"><div class="rl">Ángulo γ = 180° - α - β</div><div class="rv a" id="resG">105°</div></div>
+      <div class="rcard"><div class="rl">Lado a (dado)</div><div class="rv a" id="resA">8.00</div></div>
+      <div class="rcard"><div class="rl">Lado b calculado</div><div class="rv b" id="resB">—</div></div>
+      <div class="rcard"><div class="rl">Lado c calculado</div><div class="rv c" id="resC">—</div></div>
+      <div class="ratio-box" id="ratioBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: DEMO -->
+<div class="panel" id="panel-demo">
+  <div class="demo">
+    <div class="dstep">
+      <div class="dnum">1</div>
+      <div class="dcontent">
+        <strong>Trazar altura h desde el vértice C</strong>
+        <p>Dividimos el triángulo en dos triángulos rectángulos</p>
+        <div class="dcode">        C
+       /|\
+      / | \
+   a /  |h \ b
+    /   |   \
+   / β  |  α \
+  /_____|_____\
+ A             B</div>
+      </div>
+    </div>
+    <div class="dstep">
+      <div class="dnum">2</div>
+      <div class="dcontent">
+        <strong>Relacionar h con lados a y b</strong>
+        <p>Aplicamos seno en cada triángulo rectángulo</p>
+        <div class="dcode">Triángulo izquierdo:  sin(β) = h/a  →  <span class="hl">h = a·sin(β)</span>
+Triángulo derecho:   sin(α) = h/b  →  <span class="hl">h = b·sin(α)</span></div>
+      </div>
+    </div>
+    <div class="dstep">
+      <div class="dnum">3</div>
+      <div class="dcontent">
+        <strong>Igualar las dos expresiones de h</strong>
+        <div class="dcode">a·sin(β) = b·sin(α)
+
+Dividir entre sin(α)·sin(β):
+<span class="hl">a/sin(α) = b/sin(β) ✓</span></div>
+      </div>
+    </div>
+    <div class="dstep">
+      <div class="dnum">4</div>
+      <div class="dcontent">
+        <strong>Repetir para el tercer lado</strong>
+        <p>Trazando altura desde otro vértice se obtiene</p>
+        <div class="dcode">b/sin(β) = c/sin(γ)
+
+Resultado final:
+<span class="hl">a/sin(α) = b/sin(β) = c/sin(γ) ✓</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: EJERCICIOS -->
+<div class="panel" id="panel-ejercicios">
+  <div class="exgrid">
+    <div class="excard">
+      <div class="exhead"><span>Ejercicio 1</span><h3>Calcular lado b</h3></div>
+      <div class="exbody">
+        <div class="datos">Datos: a = 10, α = 30°, β = 60°</div>
+        <div class="sol">a/sin(α) = b/sin(β)
+10/sin(30°) = b/sin(60°)
+10/(1/2) = b/(√3/2)
+20 = b/(√3/2)
+b = 20·(√3/2)
+b = 10√3
+<span class="hl">≈ 17.32 ✓</span>
+
+Verif: 10/sin(30°) = 20
+       10√3/sin(60°) = 20 ✓</div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exhead"><span>Ejercicio 2</span><h3>Calcular lado c</h3></div>
+      <div class="exbody">
+        <div class="datos">Datos: b = 15, β = 45°, γ = 60°</div>
+        <div class="sol">b/sin(β) = c/sin(γ)
+15/sin(45°) = c/sin(60°)
+15/(√2/2) = c/(√3/2)
+c = 15·(√3/2)/(√2/2)
+c = 15·√3/√2
+c = 15√6/2
+<span class="hl">≈ 18.37 ✓</span></div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exhead"><span>Verificación</span><h3>Comprobación de ratios</h3></div>
+      <div class="exbody">
+        <div class="datos">Triángulo: a = 8, α = 30°, β = 45°</div>
+        <div class="sol">γ = 180° - 30° - 45° = 105°
+
+a/sin(α) = 8/0.5 = 16
+b = 16·sin(45°) = 8√2 ≈ 11.31
+c = 16·sin(105°) ≈ 15.45
+
+<span class="hl">Todos los ratios = 16 ✓</span></div>
+      </div>
+    </div>
+    <div class="excard">
+      <div class="exhead"><span>Ejercicio 3</span><h3>Equilátero</h3></div>
+      <div class="exbody">
+        <div class="datos">Triángulo equilátero: a = 10, α = β = γ = 60°</div>
+        <div class="sol">a/sin(α) = 10/sin(60°)
+= 10/(√3/2)
+= 20/√3 ≈ 11.55
+
+b = 11.55·sin(60°) = 10 ✓
+c = 11.55·sin(60°) = 10 ✓
+
+<span class="hl">Los tres lados iguales ✓</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: USO -->
+<div class="panel" id="panel-uso">
+  <div class="usage">
+    <h3>✓ Cuándo SÍ usar el Teorema del Seno</h3>
+    <div class="urow"><div class="ub">→</div><div class="ut">Conoces dos ángulos y un lado (AAS o ASA)</div></div>
+    <div class="urow"><div class="ub">→</div><div class="ut">Conoces dos lados y un ángulo opuesto a uno de ellos (SSA)</div></div>
+    <div class="urow"><div class="ub">→</div><div class="ut">Quieres encontrar un ángulo desconocido dado dos lados y un ángulo</div></div>
+  </div>
+  <div class="usage" style="border-left: 3px solid #ff4444; margin-top: 14px;">
+    <h3 style="color:#ff7777">✗ Cuándo NO usar el Teorema del Seno</h3>
+    <div class="urow"><div class="ub" style="color:#ff7777">→</div><div class="ut">Solo conoces tres lados (SSS) → usar Teorema del Coseno</div></div>
+    <div class="urow"><div class="ub" style="color:#ff7777">→</div><div class="ut">Conoces dos lados y el ángulo entre ellos (SAS) → usar Teorema del Coseno</div></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+function rad(d){ return d*Math.PI/180; }
+function fmt(n){ return n.toFixed(2); }
+
+function showTab(id, el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='explorer') update();
+}
+
+function drawTriangle(a,b,c, alpha, beta, gamma){
+  const W=cv.offsetWidth||500, H=340;
+  cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#0a0f18'; ctx.fillRect(0,0,W,H);
+
+  // Scale to fit
+  const maxSide = Math.max(a,b,c);
+  const sc = Math.min((W-80)/maxSide, (H-80)/maxSide) * 0.85;
+
+  // Place A at bottom-left, B at bottom-right, C at top
+  const Ax=40, Ay=H-45;
+  const Bx=Ax+c*sc, By=Ay;
+  const Cx=Ax+b*sc*Math.cos(rad(gamma)), Cy=Ay-b*sc*Math.sin(rad(gamma));
+
+  // Height line
+  ctx.strokeStyle='rgba(255,204,0,.3)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(Cx,Cy); ctx.lineTo(Cx,Ay); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Sides
+  const sides = [[Ax,Ay,Bx,By,'#a8ff47',`c=${fmt(c)}`],
+                  [Ax,Ay,Cx,Cy,'#ff6b35',`b=${fmt(b)}`],
+                  [Cx,Cy,Bx,By,'#00e5ff',`a=${fmt(a)}`]];
+  sides.forEach(([x1,y1,x2,y2,col,lbl])=>{
+    ctx.strokeStyle=col; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.fillStyle=col; ctx.font='bold 11px IBM Plex Mono,monospace';
+    ctx.fillText(lbl,(x1+x2)/2-20,(y1+y2)/2-8);
+  });
+
+  // Angle arcs
+  const arcs=[
+    [Ax,Ay,rad(gamma),0,'#a8ff47',`γ=${gamma}°`,-38,18],
+    [Bx,By,Math.PI-rad(alpha),-Math.PI,'#00e5ff',`α=${Math.round(alpha*10)/10}°`,-50,18],
+    [Cx,Cy,-rad(beta/2+gamma/2)*0,0,'#ff6b35',`β=${Math.round(beta*10)/10}°`,8,-10],
+  ];
+  ctx.font='bold 11px IBM Plex Mono,monospace';
+  ctx.fillStyle='#a8ff47'; ctx.fillText(`γ=${Math.round(gamma)}°`,Ax+8,Ay-8);
+  ctx.fillStyle='#00e5ff'; ctx.fillText(`α=${Math.round(alpha)}°`,Bx-45,By-8);
+  ctx.fillStyle='#ff6b35'; ctx.fillText(`β=${Math.round(beta)}°`,Cx+8,Cy+16);
+
+  // Points
+  [[Ax,Ay,'A'],[Bx,By,'B'],[Cx,Cy,'C']].forEach(([x,y,l])=>{
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x,y,5,0,2*Math.PI); ctx.fill();
+    ctx.fillStyle='#aac'; ctx.font='12px IBM Plex Mono';
+    ctx.fillText(l, x+(l==='B'?8:-18), y+(l==='C'?-10:18));
+  });
+}
+
+function update(){
+  let alpha=+document.getElementById('slA').value;
+  let beta=+document.getElementById('slB').value;
+  const sideA=+document.getElementById('slSideA').value;
+  if(alpha+beta>=170){ beta=170-alpha; document.getElementById('slB').value=beta; }
+  const gamma=180-alpha-beta;
+  document.getElementById('vA').textContent=alpha;
+  document.getElementById('vB').textContent=beta;
+  document.getElementById('vSideA').textContent=sideA;
+  document.getElementById('resG').textContent=gamma+'°';
+  document.getElementById('resA').textContent=fmt(sideA);
+  const ratio=sideA/Math.sin(rad(alpha));
+  const sideB=ratio*Math.sin(rad(beta));
+  const sideC=ratio*Math.sin(rad(gamma));
+  document.getElementById('resB').textContent=fmt(sideB);
+  document.getElementById('resC').textContent=fmt(sideC);
+  document.getElementById('ratioBox').innerHTML=
+    `<span class="hl">a/sin(α)</span> = ${fmt(sideA)}/sin(${alpha}°) = ${fmt(ratio)}\n`+
+    `<span class="hl">b/sin(β)</span> = ${fmt(sideB)}/sin(${beta}°) = ${fmt(ratio)}\n`+
+    `<span class="hl">c/sin(γ)</span> = ${fmt(sideC)}/sin(${gamma}°) = ${fmt(ratio)}\n`+
+    `<span class="hl">= 2R = ${fmt(ratio)}</span>`;
+  drawTriangle(sideA, sideB, sideC, alpha, beta, gamma);
+}
+
+['slA','slB','slSideA'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+window.addEventListener('resize',update);
+update();
+</script>
+</body>
+</html>
